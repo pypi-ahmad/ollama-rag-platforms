@@ -1,0 +1,26 @@
+[project]
+name = "local-slm-ollama-benchmark"
+version = "0.1.0"
+description = "Offline local SLM benchmarking and chat app powered by Ollama."
+readme = "README.md"
+authors = [
+    { name = "Ahmad Mujtaba", email = "[email protected]" }
+]
+requires-python = ">=3.11"
+dependencies = [
+    "httpx>=0.28.1,<0.29.0",
+    "pydantic>=2.11.7,<3.0.0",
+    "rich>=14.0.0,<15.0.0",
+]
+
+[project.scripts]
+local-slm-ollama-benchmark = "local_slm_ollama_benchmark.cli:main"
+
+[dependency-groups]
+dev = [
+    "pytest>=8.4.1,<9.0.0",
+]
+
+[build-system]
+requires = ["uv_build>=0.11.19,<0.12.0"]
+build-backend = "uv_build"

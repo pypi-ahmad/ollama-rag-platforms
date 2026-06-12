@@ -1,0 +1,12 @@
+services:
+  duckdb-analytics-mcp:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      HOST: 0.0.0.0
+      PORT: 8000
+      TRANSPORT: streamable-http
+      DATASET_DIR: /app/data
+    volumes:
+      - ./data:/app/data:ro

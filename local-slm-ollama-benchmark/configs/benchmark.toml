@@ -1,0 +1,77 @@
+ollama_host = "http://127.0.0.1:11434"
+models = [
+  "functiongemma:270m",
+  "phi3.5:3.8b",
+  "granite4.1:3b",
+]
+
+[generation]
+temperature = 0.0
+top_p = 0.9
+num_predict = 220
+think = false
+seed = 42
+
+[runtime]
+repeat_count = 2
+request_timeout_sec = 180
+keep_alive = "20m"
+warmup_prompt = "Reply with READY only."
+
+[cost]
+# Optional cost estimation assumptions. Uncomment and edit for your environment.
+# electricity_rate_usd_per_kwh = 0.15
+# assumed_power_watts = 85
+
+[[prompts]]
+id = "privacy_constraints"
+title = "Privacy-latency-cost tradeoff summary"
+prompt = """
+You are advising a healthcare startup choosing local LLMs.
+In exactly 4 bullet points, explain tradeoffs across privacy, latency, cost, and compliance.
+Do not use markdown headings.
+"""
+evaluation_type = "keywords"
+expected_keywords = ["privacy", "latency", "cost", "compliance"]
+max_words = 100
+
+[[prompts]]
+id = "incident_json"
+title = "Structured incident response"
+prompt = """
+Given: 'Customer data export endpoint times out after deployment when cache misses spike.'
+Return valid JSON only with keys: root_cause, severity, mitigation.
+"""
+evaluation_type = "json_keys"
+required_json_keys = ["root_cause", "severity", "mitigation"]
+max_words = 90
+
+[[prompts]]
+id = "deterministic_math"
+title = "Deterministic correctness check"
+prompt = "Compute (17 * 23) - 19. Return only the integer."
+evaluation_type = "exact_match"
+expected_answer = "372"
+max_words = 3
+
+[[prompts]]
+id = "risk_disclosure"
+title = "Assumptions and limitations"
+prompt = """
+In 3 bullet points, recommend a model choice for offline customer-support triage.
+Include the words assumption, limitation, and fallback.
+"""
+evaluation_type = "keywords"
+expected_keywords = ["assumption", "limitation", "fallback"]
+max_words = 80
+
+[[prompts]]
+id = "security_posture"
+title = "Security posture note"
+prompt = """
+Write 2 short sentences for a security policy note about local model hosting.
+Must include these words: offline, pii, encryption.
+"""
+evaluation_type = "keywords"
+expected_keywords = ["offline", "pii", "encryption"]
+max_words = 60

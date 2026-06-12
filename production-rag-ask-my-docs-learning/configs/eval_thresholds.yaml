@@ -1,0 +1,7 @@
+thresholds:
+  hybrid_recall_at_5: 1.0
+  hybrid_mrr_at_5: 0.9
+  citation_coverage: 1.0
+  citation_validity: 1.0
+  keyword_recall: 0.8
+  hybrid_vs_vector_recall_delta: 0.0

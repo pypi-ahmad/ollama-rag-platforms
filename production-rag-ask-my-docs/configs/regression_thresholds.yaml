@@ -1,0 +1,11 @@
+absolute:
+  min_answer_f1: 0.60
+  min_retrieval_recall_at_k: 0.95
+  max_latency_p95_ms: 70000.0
+  max_avg_cost_usd: 0.0004
+
+regression:
+  max_answer_f1_drop: 0.05
+  max_retrieval_recall_drop: 0.02
+  max_latency_p95_increase_ms: 15000.0
+  max_avg_cost_increase_usd: 0.00008

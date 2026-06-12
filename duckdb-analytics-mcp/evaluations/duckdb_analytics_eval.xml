@@ -1,0 +1,42 @@
+<evaluation>
+  <qa_pair>
+    <question>Using sales_orders.csv, how many total orders are in the dataset?</question>
+    <answer>30</answer>
+  </qa_pair>
+  <qa_pair>
+    <question>Using sales_orders.csv, what is the total number of units sold across all orders?</question>
+    <answer>539</answer>
+  </qa_pair>
+  <qa_pair>
+    <question>Using sales_orders.csv, which region has the highest total net revenue (units * unit_price * (1 - discount_pct))?</question>
+    <answer>North</answer>
+  </qa_pair>
+  <qa_pair>
+    <question>Using sales_orders.csv, what is the average discount_pct rounded to 4 decimals?</question>
+    <answer>0.0673</answer>
+  </qa_pair>
+  <qa_pair>
+    <question>Using sales_orders.csv, which product has the highest total units sold?</question>
+    <answer>Mouse</answer>
+  </qa_pair>
+  <qa_pair>
+    <question>Using sales_orders.csv, what is total net revenue for product Laptop rounded to 2 decimals?</question>
+    <answer>28610.91</answer>
+  </qa_pair>
+  <qa_pair>
+    <question>Using sales_orders.csv, how many orders were placed through the Online channel?</question>
+    <answer>12</answer>
+  </qa_pair>
+  <qa_pair>
+    <question>Using support_tickets.jsonl, how many tickets are currently open?</question>
+    <answer>3</answer>
+  </qa_pair>
+  <qa_pair>
+    <question>Using support_tickets.jsonl, what is the average resolution_hours for closed tickets rounded to 2 decimals?</question>
+    <answer>12.06</answer>
+  </qa_pair>
+  <qa_pair>
+    <question>Using support_tickets.jsonl, how many tickets are both critical priority and still open?</question>
+    <answer>1</answer>
+  </qa_pair>
+</evaluation>

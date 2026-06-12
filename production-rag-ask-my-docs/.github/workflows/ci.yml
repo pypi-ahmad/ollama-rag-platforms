@@ -1,0 +1,49 @@
+name: ci
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+
+jobs:
+  quality-and-regression-gate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup uv
+        uses: astral-sh/setup-uv@v4
+        with:
+          python-version: "3.11"
+
+      - name: Sync dependencies
+        run: uv sync --all-extras
+
+      - name: Lint
+        run: uv run ruff check src tests
+
+      - name: Type check
+        run: uv run mypy src
+
+      - name: Unit tests
+        run: uv run pytest -q
+
+      - name: Build retrieval index
+        run: uv run ask-my-docs ingest --docs-dir data/docs
+
+      - name: Candidate metrics
+        run: |
+          uv run ask-my-docs eval \
+            --eval-path data/eval/eval_set.jsonl \
+            --output artifacts/eval/ci_metrics.json
+
+      - name: Regression gate
+        run: |
+          uv run ask-my-docs eval \
+            --eval-path data/eval/eval_set.jsonl \
+            --output artifacts/eval/ci_gate_metrics.json \
+            --baseline artifacts/baseline_metrics.json \
+            --thresholds configs/regression_thresholds.yaml \
+            --gate

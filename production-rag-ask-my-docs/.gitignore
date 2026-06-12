@@ -1,0 +1,9 @@
+.venv/
+.venv_obs/
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+artifacts/index/
+artifacts/eval/
+artifacts/observability/
