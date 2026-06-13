@@ -1,0 +1,38 @@
+[
+  {
+    "question_id": "q1",
+    "question": "What paging system handles the primary on-call rotation?",
+    "reference_answer": "Solar Pager handles primary on-call.",
+    "required_keywords": ["solar pager"]
+  },
+  {
+    "question_id": "q2",
+    "question": "How long are raw event logs retained?",
+    "reference_answer": "Raw event logs are retained for 400 days.",
+    "required_keywords": ["400 days"]
+  },
+  {
+    "question_id": "q3",
+    "question": "What p95 latency threshold forces emergency rollback, and for how long must it persist?",
+    "reference_answer": "Rollback is mandatory when p95 latency exceeds 1200 ms for 10 consecutive minutes.",
+    "required_keywords": ["1200", "10", "minutes"]
+  },
+  {
+    "question_id": "q4",
+    "question": "What is the scheduled weekly release train time?",
+    "reference_answer": "Release train is Tuesday 16:00 UTC.",
+    "required_keywords": ["tuesday", "16:00", "utc"]
+  },
+  {
+    "question_id": "q5",
+    "question": "What is the enterprise first-response SLA?",
+    "reference_answer": "Enterprise first response SLA is 20 minutes.",
+    "required_keywords": ["20", "minutes"]
+  },
+  {
+    "question_id": "q6",
+    "question": "Which Slack channel is used for urgent support escalation?",
+    "reference_answer": "Use #support-escalation.",
+    "required_keywords": ["#support-escalation"]
+  }
+]

@@ -1,0 +1,6 @@
+{
+  "chunk_count": 5,
+  "embedding_dim": 256,
+  "lexical_weight": 0.45,
+  "semantic_weight": 0.55
+}

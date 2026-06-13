@@ -1,0 +1,30 @@
+{
+  "planner_model": "phi3.5:3.8b",
+  "reviewer_model": "functiongemma:270m",
+  "demo_runs_path": "/home/ahmad/AI/Projects/multi-agent-system-ollama/artifacts/runs/demo_runs.json",
+  "demo_questions": [
+    "When should emergency rollback be triggered for API incidents?",
+    "What is the enterprise support first-response SLA?",
+    "What canary percentage is used at release start?"
+  ],
+  "demo_count": 3,
+  "evaluation": {
+    "summary": {
+      "n_tasks": 6,
+      "baseline_keyword_recall_mean": 0.0,
+      "multi_agent_keyword_recall_mean": 0.8333333333333334,
+      "keyword_recall_gain": 0.8333333333333334,
+      "retrieval_hit_rate": 1.0,
+      "source_citation_rate": 1.0,
+      "planner_fallback_rate": 1.0,
+      "reviewer_fallback_rate": 0.0,
+      "avg_total_latency_ms": 13017.572666666667
+    },
+    "predictions_path": "/home/ahmad/AI/Projects/multi-agent-system-ollama/artifacts/evals/predictions.csv",
+    "summary_path": "/home/ahmad/AI/Projects/multi-agent-system-ollama/artifacts/evals/summary.json",
+    "report_path": "/home/ahmad/AI/Projects/multi-agent-system-ollama/artifacts/reports/multi_agent_system_report.md",
+    "trace_path": "/home/ahmad/AI/Projects/multi-agent-system-ollama/artifacts/telemetry/traces.jsonl",
+    "telemetry_summary_path": "/home/ahmad/AI/Projects/multi-agent-system-ollama/artifacts/telemetry/summary.json"
+  },
+  "run_summary_path": "/home/ahmad/AI/Projects/multi-agent-system-ollama/artifacts/run_summary.json"
+}

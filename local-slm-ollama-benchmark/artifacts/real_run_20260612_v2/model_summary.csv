@@ -1,0 +1,4 @@
+model,sample_count,avg_latency_sec,p95_latency_sec,avg_tokens_per_sec,avg_quality_score,quality_delta_vs_baseline,speedup_vs_baseline,balanced_score,estimated_benchmark_cost_usd
+phi3.5:3.8b,10,1.3568,2.3789,98.404,0.6559,0.3726,0.4387,0.6544,
+qwen3.5:9b,10,2.4658,4.7413,44.5181,0.7326,0.4493,0.2414,0.653,
+functiongemma:270m,10,0.5952,0.6544,335.7286,0.2833,0.0,1.0,0.632,

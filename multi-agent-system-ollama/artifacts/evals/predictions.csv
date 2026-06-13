@@ -1,0 +1,63 @@
+task_id,question,expected_source,baseline_answer,final_answer,baseline_keyword_recall,final_keyword_recall,keyword_gain,retrieval_hit,source_cited_in_final,planner_fallback_used,reviewer_fallback_used,total_latency_ms
+t1,When should emergency rollback be triggered for API incidents?,incident_triage.md,I do not know from the provided question alone.,"Fallback plan (incident/S1): prioritize guidance from incident_triage.md. Key context: # Incident Triage Guide
+
+Primary on-call paging is handled by **Solar Pager**.
+
+Incident severities:
+- **S0** full production outage
+- **S1** critical customer-impacting degradation
+- **S2** moderate degradation with workaround
+- **S3** low-impact issue
+
+For API incidents, emergency rollback is mandatory when **p95 latency exceeds 1200 ms for 10 consecutive minutes**.
+
+Reviewer checks: include operational caveats, verify thresholds before action, and cross-check with incident_triage.md, support_ops.md.",0.0,1.0,1.0,True,True,True,False,13020.102
+t2,What is the weekly release train schedule?,release_control.md,I do not know from the provided question alone.,"Fallback plan (release/NA): prioritize guidance from release_control.md. Key context: # Release Control Policy
+
+Release train window is **Tuesday 16:00 UTC**.
+
+Each deployment starts with a canary on **8% of traffic**.
+
+Promotion to 100% is allowed after **45 minutes** if error rate remains below **0.6%**.
+
+Promotion is paused if any S0/S1 incident is active.
+
+Reviewer checks: include operational caveats, verify thresholds before action, and cross-check with release_control.md, incident_triage.md.",0.0,1.0,1.0,True,True,True,False,13042.486
+t3,What canary percentage is used at release start?,release_control.md,I do not know from the provided question alone.,"Fallback plan (release/NA): prioritize guidance from model_operations.md. Key context: # Model Operations Standard
+
+Default local planner model is **phi3.5:3.8b**.
+
+Reviewer model is **functiongemma:270m**.
+
+Prompt-response cache TTL is **18 hours**.
+
+Every answer must cite at least one source filename used during retrieval.
+
+Reviewer checks: include operational caveats, verify thresholds before action, and cross-check with model_operations.md, release_control.md.",0.0,0.0,0.0,True,True,True,False,13016.987
+t4,What is enterprise first response SLA?,support_ops.md,I do not know from the provided question alone.,"Fallback plan (support/NA): prioritize guidance from support_ops.md. Key context: # Support Operations Handbook
+
+Enterprise first-response SLA is **20 minutes**.
+
+Urgent escalation channel is **#support-escalation**.
+
+A draft root-cause memo is due within **72 hours** for customer-visible incidents.
+
+Reviewer checks: include operational caveats, verify thresholds before action, and cross-check with support_ops.md, incident_triage.md.",0.0,1.0,1.0,True,True,True,False,13021.374
+t5,Where are urgent support escalations posted?,support_ops.md,I do not know from the provided question alone.,"Fallback plan (support/NA): prioritize guidance from support_ops.md. Key context: # Support Operations Handbook
+
+Enterprise first-response SLA is **20 minutes**.
+
+Urgent escalation channel is **#support-escalation**.
+
+A draft root-cause memo is due within **72 hours** for customer-visible incidents.
+
+Reviewer checks: include operational caveats, verify thresholds before action, and cross-check with support_ops.md, data_governance.md.",0.0,1.0,1.0,True,True,True,False,13032.173
+t6,How long are raw event logs retained?,data_governance.md,I do not know from the provided question alone.,"Fallback plan (general/NA): prioritize guidance from data_governance.md. Key context: # Data Governance Notes
+
+Raw event logs are retained for **400 days**.
+
+PII uses envelope encryption with policy alias **vault-river**.
+
+Full logical backups run every **Sunday 02:30 UTC** and are retained for 30 days.
+
+Reviewer checks: include operational caveats, verify thresholds before action, and cross-check with data_governance.md, incident_triage.md.",0.0,1.0,1.0,True,True,True,False,13032.309

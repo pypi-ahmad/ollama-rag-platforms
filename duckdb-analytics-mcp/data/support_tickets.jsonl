@@ -1,0 +1,12 @@
+{"ticket_id": "T-1001", "opened_at": "2026-01-03T09:15:00Z", "priority": "high", "status": "open", "region": "North", "resolution_hours": null}
+{"ticket_id": "T-1002", "opened_at": "2026-01-04T10:20:00Z", "priority": "medium", "status": "closed", "region": "South", "resolution_hours": 14.5}
+{"ticket_id": "T-1003", "opened_at": "2026-01-05T11:05:00Z", "priority": "low", "status": "closed", "region": "West", "resolution_hours": 6.0}
+{"ticket_id": "T-1004", "opened_at": "2026-01-06T08:50:00Z", "priority": "critical", "status": "closed", "region": "East", "resolution_hours": 22.0}
+{"ticket_id": "T-1005", "opened_at": "2026-01-07T14:40:00Z", "priority": "high", "status": "open", "region": "North", "resolution_hours": null}
+{"ticket_id": "T-1006", "opened_at": "2026-01-08T13:10:00Z", "priority": "medium", "status": "closed", "region": "South", "resolution_hours": 11.0}
+{"ticket_id": "T-1007", "opened_at": "2026-01-09T16:25:00Z", "priority": "low", "status": "closed", "region": "West", "resolution_hours": 5.5}
+{"ticket_id": "T-1008", "opened_at": "2026-01-10T09:30:00Z", "priority": "high", "status": "closed", "region": "East", "resolution_hours": 17.0}
+{"ticket_id": "T-1009", "opened_at": "2026-01-11T12:55:00Z", "priority": "critical", "status": "open", "region": "North", "resolution_hours": null}
+{"ticket_id": "T-1010", "opened_at": "2026-01-12T15:45:00Z", "priority": "medium", "status": "closed", "region": "South", "resolution_hours": 9.0}
+{"ticket_id": "T-1011", "opened_at": "2026-01-13T10:05:00Z", "priority": "low", "status": "closed", "region": "West", "resolution_hours": 4.0}
+{"ticket_id": "T-1012", "opened_at": "2026-01-14T17:35:00Z", "priority": "high", "status": "closed", "region": "East", "resolution_hours": 19.5}

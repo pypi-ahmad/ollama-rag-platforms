@@ -1,0 +1,125 @@
+[
+  {
+    "trace_id": "demo-001",
+    "question": "What canary percentage is used at release start?",
+    "route": {
+      "intent": "release",
+      "severity": "NA",
+      "reason": "release keywords matched"
+    },
+    "retrieved": [
+      {
+        "source": "model_operations.md",
+        "title": "Model Operations Standard",
+        "score": 0.375,
+        "text": "# Model Operations Standard\n\nDefault local planner model is **phi3.5:3.8b**.\n\nReviewer model is **functiongemma:270m**.\n\nPrompt-response cache TTL is **18 hours**.\n\nEvery answer must cite at least one source filename used during retrieval."
+      },
+      {
+        "source": "release_control.md",
+        "title": "Release Control Policy",
+        "score": 0.375,
+        "text": "# Release Control Policy\n\nRelease train window is **Tuesday 16:00 UTC**.\n\nEach deployment starts with a canary on **8% of traffic**.\n\nPromotion to 100% is allowed after **45 minutes** if error rate remains below **0.6%**.\n\nPromotion is paused if any S0/S1 incident is active."
+      },
+      {
+        "source": "incident_triage.md",
+        "title": "Incident Triage Guide",
+        "score": 0.125,
+        "text": "# Incident Triage Guide\n\nPrimary on-call paging is handled by **Solar Pager**.\n\nIncident severities:\n- **S0** full production outage\n- **S1** critical customer-impacting degradation\n- **S2** moderate degradation with workaround\n- **S3** low-impact issue\n\nFor API incidents, emergency rollback is mandatory when **p95 latency exceeds 1200 ms for 10 consecutive minutes**."
+      },
+      {
+        "source": "support_ops.md",
+        "title": "Support Operations Handbook",
+        "score": 0.125,
+        "text": "# Support Operations Handbook\n\nEnterprise first-response SLA is **20 minutes**.\n\nUrgent escalation channel is **#support-escalation**.\n\nA draft root-cause memo is due within **72 hours** for customer-visible incidents."
+      }
+    ],
+    "baseline_answer": "I do not know from the provided question alone.",
+    "plan_answer": "Fallback plan (release/NA): prioritize guidance from model_operations.md. Key context: # Model Operations Standard\n\nDefault local planner model is **phi3.5:3.8b**.\n\nReviewer model is **functiongemma:270m**.\n\nPrompt-response cache TTL is **18 hours**.\n\nEvery answer must cite at least one source filename used during retrieval.",
+    "final_answer": "Fallback plan (release/NA): prioritize guidance from model_operations.md. Key context: # Model Operations Standard\n\nDefault local planner model is **phi3.5:3.8b**.\n\nReviewer model is **functiongemma:270m**.\n\nPrompt-response cache TTL is **18 hours**.\n\nEvery answer must cite at least one source filename used during retrieval.\n\nReviewer checks: include operational caveats, verify thresholds before action, and cross-check with model_operations.md, release_control.md.",
+    "planner_fallback_used": true,
+    "reviewer_fallback_used": false,
+    "total_latency_ms": 13021.289
+  },
+  {
+    "trace_id": "demo-002",
+    "question": "Where should urgent support escalations be posted?",
+    "route": {
+      "intent": "support",
+      "severity": "NA",
+      "reason": "support keywords matched"
+    },
+    "retrieved": [
+      {
+        "source": "support_ops.md",
+        "title": "Support Operations Handbook",
+        "score": 0.2857,
+        "text": "# Support Operations Handbook\n\nEnterprise first-response SLA is **20 minutes**.\n\nUrgent escalation channel is **#support-escalation**.\n\nA draft root-cause memo is due within **72 hours** for customer-visible incidents."
+      },
+      {
+        "source": "data_governance.md",
+        "title": "Data Governance Notes",
+        "score": 0.0,
+        "text": "# Data Governance Notes\n\nRaw event logs are retained for **400 days**.\n\nPII uses envelope encryption with policy alias **vault-river**.\n\nFull logical backups run every **Sunday 02:30 UTC** and are retained for 30 days."
+      },
+      {
+        "source": "incident_triage.md",
+        "title": "Incident Triage Guide",
+        "score": 0.0,
+        "text": "# Incident Triage Guide\n\nPrimary on-call paging is handled by **Solar Pager**.\n\nIncident severities:\n- **S0** full production outage\n- **S1** critical customer-impacting degradation\n- **S2** moderate degradation with workaround\n- **S3** low-impact issue\n\nFor API incidents, emergency rollback is mandatory when **p95 latency exceeds 1200 ms for 10 consecutive minutes**."
+      },
+      {
+        "source": "model_operations.md",
+        "title": "Model Operations Standard",
+        "score": 0.0,
+        "text": "# Model Operations Standard\n\nDefault local planner model is **phi3.5:3.8b**.\n\nReviewer model is **functiongemma:270m**.\n\nPrompt-response cache TTL is **18 hours**.\n\nEvery answer must cite at least one source filename used during retrieval."
+      }
+    ],
+    "baseline_answer": "I do not know from the provided question alone.",
+    "plan_answer": "Fallback plan (support/NA): prioritize guidance from support_ops.md. Key context: # Support Operations Handbook\n\nEnterprise first-response SLA is **20 minutes**.\n\nUrgent escalation channel is **#support-escalation**.\n\nA draft root-cause memo is due within **72 hours** for customer-visible incidents.",
+    "final_answer": "Fallback plan (support/NA): prioritize guidance from support_ops.md. Key context: # Support Operations Handbook\n\nEnterprise first-response SLA is **20 minutes**.\n\nUrgent escalation channel is **#support-escalation**.\n\nA draft root-cause memo is due within **72 hours** for customer-visible incidents.\n\nReviewer checks: include operational caveats, verify thresholds before action, and cross-check with support_ops.md, data_governance.md.",
+    "planner_fallback_used": true,
+    "reviewer_fallback_used": false,
+    "total_latency_ms": 13017.003
+  },
+  {
+    "trace_id": "demo-003",
+    "question": "How long are raw event logs retained?",
+    "route": {
+      "intent": "general",
+      "severity": "NA",
+      "reason": "no strong route keywords"
+    },
+    "retrieved": [
+      {
+        "source": "data_governance.md",
+        "title": "Data Governance Notes",
+        "score": 0.7143,
+        "text": "# Data Governance Notes\n\nRaw event logs are retained for **400 days**.\n\nPII uses envelope encryption with policy alias **vault-river**.\n\nFull logical backups run every **Sunday 02:30 UTC** and are retained for 30 days."
+      },
+      {
+        "source": "incident_triage.md",
+        "title": "Incident Triage Guide",
+        "score": 0.0,
+        "text": "# Incident Triage Guide\n\nPrimary on-call paging is handled by **Solar Pager**.\n\nIncident severities:\n- **S0** full production outage\n- **S1** critical customer-impacting degradation\n- **S2** moderate degradation with workaround\n- **S3** low-impact issue\n\nFor API incidents, emergency rollback is mandatory when **p95 latency exceeds 1200 ms for 10 consecutive minutes**."
+      },
+      {
+        "source": "model_operations.md",
+        "title": "Model Operations Standard",
+        "score": 0.0,
+        "text": "# Model Operations Standard\n\nDefault local planner model is **phi3.5:3.8b**.\n\nReviewer model is **functiongemma:270m**.\n\nPrompt-response cache TTL is **18 hours**.\n\nEvery answer must cite at least one source filename used during retrieval."
+      },
+      {
+        "source": "release_control.md",
+        "title": "Release Control Policy",
+        "score": 0.0,
+        "text": "# Release Control Policy\n\nRelease train window is **Tuesday 16:00 UTC**.\n\nEach deployment starts with a canary on **8% of traffic**.\n\nPromotion to 100% is allowed after **45 minutes** if error rate remains below **0.6%**.\n\nPromotion is paused if any S0/S1 incident is active."
+      }
+    ],
+    "baseline_answer": "I do not know from the provided question alone.",
+    "plan_answer": "Fallback plan (general/NA): prioritize guidance from data_governance.md. Key context: # Data Governance Notes\n\nRaw event logs are retained for **400 days**.\n\nPII uses envelope encryption with policy alias **vault-river**.\n\nFull logical backups run every **Sunday 02:30 UTC** and are retained for 30 days.",
+    "final_answer": "Fallback plan (general/NA): prioritize guidance from data_governance.md. Key context: # Data Governance Notes\n\nRaw event logs are retained for **400 days**.\n\nPII uses envelope encryption with policy alias **vault-river**.\n\nFull logical backups run every **Sunday 02:30 UTC** and are retained for 30 days.\n\nReviewer checks: include operational caveats, verify thresholds before action, and cross-check with data_governance.md, incident_triage.md.",
+    "planner_fallback_used": true,
+    "reviewer_fallback_used": false,
+    "total_latency_ms": 13019.825
+  }
+]

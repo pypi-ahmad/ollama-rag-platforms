@@ -1,0 +1,20 @@
+queries:
+  - question: "What is the SLA for invoice disputes?"
+    gold_chunk_ids: ["billing_disputes::chunk-000"]
+    expected_keywords: ["1 business day", "3 business days", "24 hours"]
+
+  - question: "How quickly do we acknowledge Sev1 incidents and when is RCA due?"
+    gold_chunk_ids: ["incident_sla::chunk-000"]
+    expected_keywords: ["15 minutes", "3 business days"]
+
+  - question: "How often are access reviews performed and where is MFA mandatory?"
+    gold_chunk_ids: ["access_control::chunk-000"]
+    expected_keywords: ["90 days", "admin and support-console"]
+
+  - question: "How long are support tickets retained?"
+    gold_chunk_ids: ["data_retention::chunk-000"]
+    expected_keywords: ["24 months"]
+
+  - question: "When must customer deletion requests be completed?"
+    gold_chunk_ids: ["data_retention::chunk-000"]
+    expected_keywords: ["30 days"]

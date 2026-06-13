@@ -1,0 +1,34 @@
+{
+  "chat_model": "phi3.5:3.8b",
+  "embedding_model": "embeddinggemma:latest",
+  "index": {
+    "n_documents": 5,
+    "n_chunks": 5,
+    "embedding_dimension": 768,
+    "embeddings_file": "/home/ahmad/AI/Projects/rag-telemetry-evals-ollama/artifacts/index/embeddings.npy",
+    "chunks_file": "/home/ahmad/AI/Projects/rag-telemetry-evals-ollama/artifacts/index/chunks.json"
+  },
+  "evaluation": {
+    "summary": {
+      "n_questions": 8,
+      "retrieval_hit_rate": 1.0,
+      "rag_mentions_expected_source_rate": 1.0,
+      "baseline_keyword_recall_mean": 0.0,
+      "rag_keyword_recall_mean": 1.0,
+      "keyword_recall_gain": 1.0,
+      "baseline_semantic_similarity_mean": 0.021338239312171936,
+      "rag_semantic_similarity_mean": 0.19826087976365706,
+      "semantic_similarity_gain": 0.17692264045148512,
+      "baseline_latency_ms_mean": 0.0,
+      "rag_latency_ms_mean": 0.0,
+      "baseline_total_tokens_mean": 0.0,
+      "rag_total_tokens_mean": 0.0
+    },
+    "predictions_path": "/home/ahmad/AI/Projects/rag-telemetry-evals-ollama/artifacts/evals/predictions.csv",
+    "summary_path": "/home/ahmad/AI/Projects/rag-telemetry-evals-ollama/artifacts/evals/summary.json",
+    "report_path": "/home/ahmad/AI/Projects/rag-telemetry-evals-ollama/artifacts/reports/rag_telemetry_eval_report.md",
+    "telemetry_trace_path": "/home/ahmad/AI/Projects/rag-telemetry-evals-ollama/artifacts/telemetry/traces.jsonl",
+    "telemetry_summary_path": "/home/ahmad/AI/Projects/rag-telemetry-evals-ollama/artifacts/telemetry/summary.json"
+  },
+  "run_summary_path": "/home/ahmad/AI/Projects/rag-telemetry-evals-ollama/artifacts/run_summary.json"
+}

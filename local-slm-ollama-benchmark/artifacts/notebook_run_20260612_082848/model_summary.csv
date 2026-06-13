@@ -1,0 +1,4 @@
+model,sample_count,avg_latency_sec,p95_latency_sec,avg_tokens_per_sec,avg_quality_score,quality_delta_vs_baseline,speedup_vs_baseline,balanced_score,estimated_benchmark_cost_usd
+granite4.1:3b,10,1.0704,2.4492,104.1202,0.6667,0.3834,1.138,0.8211,
+phi3.5:3.8b,10,15.8485,53.1894,94.981,0.6637,0.3804,0.0769,0.799,
+functiongemma:270m,10,1.2182,1.3502,188.3842,0.2833,0.0,1.0,0.655,

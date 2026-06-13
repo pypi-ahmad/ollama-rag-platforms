@@ -1,0 +1,53 @@
+{
+  "generated_at_utc": "2026-06-12T11:40:48+00:00",
+  "trace_file": "/home/ahmad/AI/Projects/multi-agent-system-ollama/artifacts/telemetry/traces.jsonl",
+  "n_spans": 30,
+  "n_unique_traces": 6,
+  "by_span": [
+    {
+      "span_name": "baseline_answer",
+      "count": 6,
+      "error_count": 0,
+      "latency_ms_mean": 5011.008,
+      "latency_ms_p50": 5007.326,
+      "latency_ms_p95": 5024.523,
+      "latency_ms_max": 5029.157
+    },
+    {
+      "span_name": "plan_answer",
+      "count": 6,
+      "error_count": 0,
+      "latency_ms_mean": 8016.021,
+      "latency_ms_p50": 8013.076,
+      "latency_ms_p95": 8024.712,
+      "latency_ms_max": 8025.971
+    },
+    {
+      "span_name": "retrieve",
+      "count": 6,
+      "error_count": 0,
+      "latency_ms_mean": 0.068,
+      "latency_ms_p50": 0.068,
+      "latency_ms_p95": 0.077,
+      "latency_ms_max": 0.077
+    },
+    {
+      "span_name": "review_answer",
+      "count": 6,
+      "error_count": 0,
+      "latency_ms_mean": 0.016,
+      "latency_ms_p50": 0.013,
+      "latency_ms_p95": 0.023,
+      "latency_ms_max": 0.024
+    },
+    {
+      "span_name": "route",
+      "count": 6,
+      "error_count": 0,
+      "latency_ms_mean": 0.014,
+      "latency_ms_p50": 0.013,
+      "latency_ms_p95": 0.018,
+      "latency_ms_max": 0.02
+    }
+  ]
+}

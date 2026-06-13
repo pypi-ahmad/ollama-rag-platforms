@@ -1,0 +1,58 @@
+[
+  {
+    "question_id": "q1",
+    "question": "What paging system handles the primary on-call rotation?",
+    "reference_answer": "Solar Pager handles the primary on-call rotation.",
+    "expected_source": "operations_runbook.md",
+    "required_keywords": ["solar pager"]
+  },
+  {
+    "question_id": "q2",
+    "question": "How long are raw event logs retained?",
+    "reference_answer": "Raw event logs are retained for 400 days.",
+    "expected_source": "data_policy.md",
+    "required_keywords": ["400", "days"]
+  },
+  {
+    "question_id": "q3",
+    "question": "When does API incident rollback become mandatory?",
+    "reference_answer": "Emergency rollback is mandatory when p95 latency exceeds 1200 ms for 10 consecutive minutes.",
+    "expected_source": "operations_runbook.md",
+    "required_keywords": ["1200", "10", "minutes"]
+  },
+  {
+    "question_id": "q4",
+    "question": "What is the weekly production release train schedule?",
+    "reference_answer": "Production release train is Tuesday 16:00 UTC.",
+    "expected_source": "release_protocol.md",
+    "required_keywords": ["tuesday", "16:00", "utc"]
+  },
+  {
+    "question_id": "q5",
+    "question": "What is the enterprise support first-response SLA?",
+    "reference_answer": "Enterprise support first response SLA is 20 minutes.",
+    "expected_source": "support_handbook.md",
+    "required_keywords": ["20", "minutes"]
+  },
+  {
+    "question_id": "q6",
+    "question": "Where should urgent support escalation be posted?",
+    "reference_answer": "Urgent support escalation must be posted in #support-escalation.",
+    "expected_source": "support_handbook.md",
+    "required_keywords": ["#support-escalation"]
+  },
+  {
+    "question_id": "q7",
+    "question": "How long is the response cache TTL for repeated prompts?",
+    "reference_answer": "The response cache TTL is 18 hours.",
+    "expected_source": "model_ops.md",
+    "required_keywords": ["18", "hours"]
+  },
+  {
+    "question_id": "q8",
+    "question": "What canary traffic percentage is used at release start?",
+    "reference_answer": "Each release starts with a canary deployment to 8% of traffic.",
+    "expected_source": "release_protocol.md",
+    "required_keywords": ["8%", "canary"]
+  }
+]

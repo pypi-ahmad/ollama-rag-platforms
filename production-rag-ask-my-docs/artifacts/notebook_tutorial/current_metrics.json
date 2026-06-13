@@ -1,0 +1,129 @@
+{
+  "aggregate": {
+    "answer_f1_mean": 0.7193830352653882,
+    "avg_cost_usd": 0.00026013,
+    "avg_tokens": 717.2,
+    "exact_match_mean": 0.0,
+    "latency_p50_ms": 21382.19,
+    "latency_p95_ms": 32220.5438,
+    "num_examples": 5.0,
+    "retrieval_recall_at_k_mean": 1.0
+  },
+  "per_example": [
+    {
+      "answer_f1": 0.48351648351648346,
+      "citations": [
+        "billing_disputes"
+      ],
+      "estimated_cost_usd": 0.0003402,
+      "exact_match": 0.0,
+      "generation_latency_ms": 34239.651,
+      "latency_ms": 34240.442,
+      "model_name": "gemma4:12b",
+      "predicted_answer": "All invoice disputes must be acknowledged within 1 business day [billing_disputes]. Standard-priority disputes have a target resolution SLA of 3 business days after acknowledgement, while Enterprise-priority disputes must be resolved within 24 hours [billing_disputes]. If a dispute remains unresolved after the SLA window, it is escalated to finance-oncall and customer success leadership on the same day [billing_disputes].",
+      "question": "What are the billing dispute SLAs and escalation rule?",
+      "reference_answer": "Invoice disputes are acknowledged within 1 business day. Standard disputes are resolved in 3 business days, enterprise disputes in 24 hours, and unresolved cases escalate the same day.",
+      "retrieval_latency_ms": 0.652,
+      "retrieval_recall_at_k": 1.0,
+      "retrieved_doc_ids": [
+        "billing_disputes",
+        "data_retention",
+        "onboarding_handover",
+        "access_control"
+      ],
+      "total_tokens": 855
+    },
+    {
+      "answer_f1": 0.9411764705882353,
+      "citations": [
+        "incident_sla"
+      ],
+      "estimated_cost_usd": 0.00022875,
+      "exact_match": 0.0,
+      "generation_latency_ms": 20146.003,
+      "latency_ms": 20146.379,
+      "model_name": "gemma4:12b",
+      "predicted_answer": "Severity 1 incidents require acknowledgement within 15 minutes and a customer-facing workaround within 4 hours [incident_sla].",
+      "question": "What is the Sev1 incident acknowledgement and workaround timeline?",
+      "reference_answer": "Severity 1 incidents require acknowledgement within 15 minutes and a customer-facing workaround within 4 hours.",
+      "retrieval_latency_ms": 0.29,
+      "retrieval_recall_at_k": 1.0,
+      "retrieved_doc_ids": [
+        "incident_sla",
+        "billing_disputes",
+        "onboarding_handover",
+        "data_retention"
+      ],
+      "total_tokens": 673
+    },
+    {
+      "answer_f1": 0.75,
+      "citations": [
+        "access_control"
+      ],
+      "estimated_cost_usd": 0.00025905,
+      "exact_match": 0.0,
+      "generation_latency_ms": 24140.544,
+      "latency_ms": 24140.951,
+      "model_name": "gemma4:12b",
+      "predicted_answer": "Access reviews are performed every 90 days [access_control]. Multi-factor authentication is mandatory for all admin and support-console accounts [access_control].",
+      "question": "How often are access reviews run and what accounts require MFA?",
+      "reference_answer": "Access reviews are performed every 90 days, and MFA is mandatory for admin and support-console accounts.",
+      "retrieval_latency_ms": 0.308,
+      "retrieval_recall_at_k": 1.0,
+      "retrieved_doc_ids": [
+        "access_control",
+        "data_retention",
+        "onboarding_handover",
+        "incident_sla"
+      ],
+      "total_tokens": 707
+    },
+    {
+      "answer_f1": 0.7555555555555554,
+      "citations": [
+        "data_retention"
+      ],
+      "estimated_cost_usd": 0.0002358,
+      "exact_match": 0.0,
+      "generation_latency_ms": 21381.465,
+      "latency_ms": 21382.19,
+      "model_name": "gemma4:12b",
+      "predicted_answer": "Support tickets are retained for 24 months and then archived [data_retention]. Customer deletion requests must be fully completed within 30 days of verified request receipt [data_retention].",
+      "question": "How long are support tickets retained and when are deletion requests completed?",
+      "reference_answer": "Support tickets are retained for 24 months, and verified deletion requests must be completed within 30 days.",
+      "retrieval_latency_ms": 0.579,
+      "retrieval_recall_at_k": 1.0,
+      "retrieved_doc_ids": [
+        "data_retention",
+        "access_control",
+        "onboarding_handover",
+        "incident_sla"
+      ],
+      "total_tokens": 669
+    },
+    {
+      "answer_f1": 0.6666666666666667,
+      "citations": [
+        "onboarding_handover"
+      ],
+      "estimated_cost_usd": 0.00023685,
+      "exact_match": 0.0,
+      "generation_latency_ms": 21170.07,
+      "latency_ms": 21170.481,
+      "model_name": "gemma4:12b",
+      "predicted_answer": "A solution architect handover must occur within the first 7 days after contract signature [onboarding_handover]. For enterprise customers, executive checkpoints are scheduled every quarter [onboarding_handover].",
+      "question": "When must onboarding handover and executive checkpoints happen?",
+      "reference_answer": "The solution architect handover happens within 7 days of contract signature, and enterprise executive checkpoints occur every quarter.",
+      "retrieval_latency_ms": 0.321,
+      "retrieval_recall_at_k": 1.0,
+      "retrieved_doc_ids": [
+        "onboarding_handover",
+        "data_retention",
+        "access_control",
+        "billing_disputes"
+      ],
+      "total_tokens": 682
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+                                                                                
+ Usage: ask-my-docs [OPTIONS] COMMAND [ARGS]...                                 
+                                                                                
+╭─ Options ────────────────────────────────────────────────────────────────────╮
+│ --help          Show this message and exit.                                  │
+╰──────────────────────────────────────────────────────────────────────────────╯
+╭─ Commands ───────────────────────────────────────────────────────────────────╮
+│ build-index        Ingest docs and build BM25/vector/reranker-ready          │
+│                    retrieval artifacts.                                      │
+│ ask                Ask the indexed knowledge base and print citation-backed  │
+│                    answer.                                                   │
+│ evaluate           Run retrieval/citation evaluation and optionally enforce  │
+│                    pass/fail gates.                                          │
+│ inspect-retrieval  Print retrieval scores to learn hybrid + rerank behavior. │
+│ serve              Run FastAPI server for interactive use.                   │
+╰──────────────────────────────────────────────────────────────────────────────╯
+

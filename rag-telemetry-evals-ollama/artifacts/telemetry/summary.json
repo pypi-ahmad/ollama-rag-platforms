@@ -1,0 +1,53 @@
+{
+  "generated_at_utc": "2026-06-12T11:36:17+00:00",
+  "trace_file": "/home/ahmad/AI/Projects/rag-telemetry-evals-ollama/artifacts/telemetry/traces.jsonl",
+  "n_spans": 40,
+  "n_unique_traces": 16,
+  "by_span": [
+    {
+      "span_name": "answer_baseline",
+      "count": 8,
+      "error_count": 0,
+      "latency_ms_mean": 14053.542,
+      "latency_ms_p50": 15011.034,
+      "latency_ms_p95": 15018.568,
+      "latency_ms_max": 15019.338
+    },
+    {
+      "span_name": "answer_rag",
+      "count": 8,
+      "error_count": 0,
+      "latency_ms_mean": 23659.074,
+      "latency_ms_p50": 27028.111,
+      "latency_ms_p95": 27035.473,
+      "latency_ms_max": 27037.123
+    },
+    {
+      "span_name": "generate_baseline",
+      "count": 8,
+      "error_count": 6,
+      "latency_ms_mean": 14051.945,
+      "latency_ms_p50": 15010.565,
+      "latency_ms_p95": 15018.2,
+      "latency_ms_max": 15019.052
+    },
+    {
+      "span_name": "generate_rag",
+      "count": 8,
+      "error_count": 6,
+      "latency_ms_mean": 13216.854,
+      "latency_ms_p50": 15016.369,
+      "latency_ms_p95": 15017.881,
+      "latency_ms_max": 15017.976
+    },
+    {
+      "span_name": "retrieve",
+      "count": 8,
+      "error_count": 0,
+      "latency_ms_mean": 10439.702,
+      "latency_ms_p50": 12007.702,
+      "latency_ms_p95": 12014.285,
+      "latency_ms_max": 12014.478
+    }
+  ]
+}

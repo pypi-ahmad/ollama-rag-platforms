@@ -1,0 +1,44 @@
+[
+  {
+    "task_id": "t1",
+    "question": "When should emergency rollback be triggered for API incidents?",
+    "reference_answer": "Rollback is required when p95 latency exceeds 1200 ms for 10 consecutive minutes.",
+    "expected_source": "incident_triage.md",
+    "required_keywords": ["1200", "10", "minutes", "rollback"]
+  },
+  {
+    "task_id": "t2",
+    "question": "What is the weekly release train schedule?",
+    "reference_answer": "Release train is Tuesday 16:00 UTC.",
+    "expected_source": "release_control.md",
+    "required_keywords": ["tuesday", "16:00", "utc"]
+  },
+  {
+    "task_id": "t3",
+    "question": "What canary percentage is used at release start?",
+    "reference_answer": "Deployment starts with 8% canary traffic.",
+    "expected_source": "release_control.md",
+    "required_keywords": ["8%", "canary"]
+  },
+  {
+    "task_id": "t4",
+    "question": "What is enterprise first response SLA?",
+    "reference_answer": "Enterprise support SLA is 20 minutes.",
+    "expected_source": "support_ops.md",
+    "required_keywords": ["20", "minutes"]
+  },
+  {
+    "task_id": "t5",
+    "question": "Where are urgent support escalations posted?",
+    "reference_answer": "Urgent escalations go to #support-escalation.",
+    "expected_source": "support_ops.md",
+    "required_keywords": ["#support-escalation"]
+  },
+  {
+    "task_id": "t6",
+    "question": "How long are raw event logs retained?",
+    "reference_answer": "Raw event logs are retained for 400 days.",
+    "expected_source": "data_governance.md",
+    "required_keywords": ["400", "days"]
+  }
+]

@@ -1,0 +1,11 @@
+{
+  "n_tasks": 6,
+  "baseline_keyword_recall_mean": 0.0,
+  "multi_agent_keyword_recall_mean": 0.8333333333333334,
+  "keyword_recall_gain": 0.8333333333333334,
+  "retrieval_hit_rate": 1.0,
+  "source_citation_rate": 1.0,
+  "planner_fallback_rate": 1.0,
+  "reviewer_fallback_rate": 0.0,
+  "avg_total_latency_ms": 13027.571833333333
+}

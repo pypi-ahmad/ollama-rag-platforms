@@ -1,0 +1,14 @@
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+Loading weights:   0%|          | 0/103 [00:00<?, ?it/s]Loading weights: 100%|██████████| 103/103 [00:00<00:00, 9604.14it/s]
+Loading weights:   0%|          | 0/105 [00:00<?, ?it/s]Loading weights: 100%|██████████| 105/105 [00:00<00:00, 9888.45it/s]
+Evaluation metrics:
+- hybrid_recall_at_5: 1.0000
+- vector_recall_at_5: 1.0000
+- hybrid_vs_vector_recall_delta: 0.0000
+- hybrid_mrr_at_5: 1.0000
+- citation_coverage: 1.0000
+- citation_validity: 1.0000
+- keyword_recall: 0.8333
+
+Evaluation report: artifacts/eval/report.json
+Gate status: PASS
