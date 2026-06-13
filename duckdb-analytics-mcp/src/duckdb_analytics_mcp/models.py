@@ -15,6 +15,14 @@ class ResponseFormat(StrEnum):
     JSON = "json"
 
 
+class HealthRequest(BaseModel):
+    """Input model for health endpoint."""
+
+    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
+
+    response_format: ResponseFormat = ResponseFormat.MARKDOWN
+
+
 class ListDatasetsRequest(BaseModel):
     """Input model for listing datasets."""
 

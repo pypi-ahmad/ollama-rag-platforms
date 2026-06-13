@@ -43,6 +43,7 @@ class AppSettings(BaseSettings):
     ollama_base_url: str = "http://127.0.0.1:11434"
     ollama_model: str | None = None
     ollama_timeout_seconds: float = 120.0
+    ollama_list_timeout_seconds: float = 10.0
 
     docs_dir: Path = Path("data/docs")
     eval_path: Path = Path("data/eval/eval_set.jsonl")
@@ -51,6 +52,7 @@ class AppSettings(BaseSettings):
     traces_path: Path = Path("artifacts/observability/traces.jsonl")
     metrics_db_path: Path = Path("artifacts/observability/metrics.duckdb")
     thresholds_path: Path = Path("configs/regression_thresholds.yaml")
+    observability_store_raw_questions: bool = False
 
     retrieval: RetrievalConfig = Field(default_factory=RetrievalConfig)
     pricing: PricingConfig = Field(default_factory=PricingConfig)

@@ -37,6 +37,7 @@ class Settings(BaseSettings):
     max_query_chars: int = Field(default=4000, ge=64, le=20000)
     query_timeout_seconds: float = Field(default=20.0, ge=1.0, le=120.0)
     max_sample_rows: int = Field(default=25, ge=1, le=200)
+    catalog_cache_ttl_seconds: float = Field(default=5.0, ge=0.0, le=300.0)
 
     duckdb_threads: int = Field(default=4, ge=1, le=64)
     duckdb_memory_limit: str = "1GB"

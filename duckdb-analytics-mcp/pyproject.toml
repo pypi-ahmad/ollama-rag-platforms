@@ -16,6 +16,7 @@ dependencies = [
     "mcp>=1.27.2",
     "pydantic>=2.13.4",
     "pydantic-settings>=2.14.1",
+    "sqlglot>=28.0.0",
     "typer>=0.26.7",
 ]
 
@@ -41,6 +42,9 @@ where = ["src"]
 pythonpath = ["src"]
 testpaths = ["tests"]
 addopts = "-q"
+markers = [
+    "e2e: end-to-end transport tests using real MCP client/server subprocesses",
+]
 
 [tool.ruff]
 line-length = 100

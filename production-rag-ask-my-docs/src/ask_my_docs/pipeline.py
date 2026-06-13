@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import re
 import time
 from dataclasses import asdict
@@ -16,7 +17,7 @@ from ask_my_docs.observability.cost import CostCalculator
 from ask_my_docs.observability.metrics_store import MetricsStore, RequestMetricRecord
 from ask_my_docs.retrieval.hybrid import HybridRetriever
 
-_CITATION_RE = re.compile(r"\[([A-Za-z0-9_.:-]+)]")
+_CITATION_RE = re.compile(r"\[(?:doc_id\s*[:=]\s*)?([A-Za-z0-9_.:-]+)]", flags=re.IGNORECASE)
 
 
 class RAGPipeline:
@@ -29,12 +30,14 @@ class RAGPipeline:
         metrics_store: MetricsStore,
         cost_calculator: CostCalculator,
         generator: OllamaGenerator,
+        store_raw_questions: bool = False,
     ) -> None:
         self._retriever = retriever
         self._tracer = tracer
         self._metrics_store = metrics_store
         self._cost_calculator = cost_calculator
         self._generator = generator
+        self._store_raw_questions = store_raw_questions
 
     def answer(
         self,
@@ -112,7 +115,7 @@ class RAGPipeline:
                     request_id=result.request_id,
                     trace_id=result.trace_id,
                     model_name=result.model_name,
-                    question=result.question,
+                    question=self._question_for_storage(result.question),
                     latency_ms=result.latency_ms,
                     retrieval_latency_ms=result.retrieval_latency_ms,
                     generation_latency_ms=result.generation_latency_ms,
@@ -143,6 +146,12 @@ class RAGPipeline:
         """Convert answer dataclass into JSON-serializable dictionary."""
 
         return asdict(result)
+
+    def _question_for_storage(self, question: str) -> str:
+        if self._store_raw_questions:
+            return question
+        digest = hashlib.sha256(question.encode("utf-8")).hexdigest()[:16]
+        return f"<redacted:sha256:{digest}:len={len(question)}>"
 
     @staticmethod
     def _extract_citations(answer_text: str, retrieved_doc_ids: list[str]) -> list[str]:

@@ -1,6 +1,9 @@
 from __future__ import annotations
 
+import time
 from pathlib import Path
+
+import pytest
 
 from duckdb_analytics_mcp.config import Settings
 from duckdb_analytics_mcp.service import AnalyticsService
@@ -52,3 +55,22 @@ def test_service_describe_dataset_returns_schema(tmp_path: Path) -> None:
     assert description.row_count == 2
     assert [column.name for column in description.columns] == ["id", "region", "units"]
     assert len(description.sample_rows) == 1
+
+
+def test_service_timeout_is_wall_clock_bounded(tmp_path: Path) -> None:
+    service = AnalyticsService(
+        Settings(
+            dataset_dir=tmp_path,
+            query_timeout_seconds=1.0,
+            max_limit=50,
+            default_limit=10,
+            max_sample_rows=20,
+        )
+    )
+
+    start = time.perf_counter()
+    with pytest.raises(TimeoutError):
+        service._run_with_timeout(lambda _: time.sleep(3.0))
+    elapsed = time.perf_counter() - start
+
+    assert elapsed < 2.0

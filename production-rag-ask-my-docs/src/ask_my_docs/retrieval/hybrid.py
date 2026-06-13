@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import hashlib
+import re
 from dataclasses import asdict
 from pathlib import Path
 
@@ -15,6 +16,13 @@ from ask_my_docs.models import Chunk, Document, RetrievedChunk
 from ask_my_docs.settings import RetrievalConfig
 from ask_my_docs.utils import ensure_dir, tokenize
 
+_DOC_ID_SANITIZE_RE = re.compile(r"[^A-Za-z0-9_.:-]+")
+
+
+def _sanitize_doc_id(raw_id: str) -> str:
+    sanitized = _DOC_ID_SANITIZE_RE.sub("_", raw_id).strip("._:-")
+    return sanitized or "doc"
+
 
 def load_documents(docs_dir: Path) -> list[Document]:
     """Load markdown/text documents recursively from disk."""
@@ -23,14 +31,33 @@ def load_documents(docs_dir: Path) -> list[Document]:
         raise FileNotFoundError(f"Docs directory does not exist: {docs_dir}")
 
     documents: list[Document] = []
+    used_doc_ids: set[str] = set()
     for path in sorted(docs_dir.rglob("*")):
         if path.suffix.lower() not in {".md", ".txt"} or not path.is_file():
             continue
-        doc_id = path.stem
+        relative_path = path.relative_to(docs_dir)
+        raw_id = ".".join(relative_path.with_suffix("").parts)
+        doc_id = _sanitize_doc_id(raw_id)
+        if doc_id in used_doc_ids:
+            suffix = hashlib.blake2b(
+                str(relative_path).encode("utf-8"),
+                digest_size=4,
+            ).hexdigest()
+            doc_id = f"{doc_id}.{suffix}"
+        if doc_id in used_doc_ids:
+            raise ValueError(f"Duplicate document id generated for path: {path}")
+
         text = path.read_text(encoding="utf-8").strip()
         if not text:
             continue
-        documents.append(Document(doc_id=doc_id, text=text, metadata={"path": str(path)}))
+        used_doc_ids.add(doc_id)
+        documents.append(
+            Document(
+                doc_id=doc_id,
+                text=text,
+                metadata={"path": str(relative_path)},
+            )
+        )
 
     if not documents:
         raise ValueError(f"No source docs found under: {docs_dir}")
@@ -106,6 +133,31 @@ class HybridRetriever:
         embedder: HashingEmbedder,
         config: RetrievalConfig,
     ) -> None:
+        if not chunks:
+            raise ValueError("Retriever requires at least one chunk")
+        if embeddings.ndim != 2:
+            raise ValueError(f"Expected 2D embeddings array, got shape={embeddings.shape}")
+        if embeddings.shape[0] != len(chunks):
+            raise ValueError(
+                "Chunk/embedding mismatch: "
+                f"chunk_count={len(chunks)} embedding_rows={embeddings.shape[0]}"
+            )
+        if embeddings.shape[1] != config.embedding_dim:
+            raise ValueError(
+                "Embedding dimension mismatch: "
+                f"config={config.embedding_dim} embeddings={embeddings.shape[1]}"
+            )
+        if faiss_index.d != embeddings.shape[1]:
+            raise ValueError(
+                "FAISS/embedding dimension mismatch: "
+                f"faiss_dim={faiss_index.d} embeddings={embeddings.shape[1]}"
+            )
+        if faiss_index.ntotal != len(chunks):
+            raise ValueError(
+                "FAISS/chunk count mismatch: "
+                f"faiss_count={faiss_index.ntotal} chunk_count={len(chunks)}"
+            )
+
         self._chunks = chunks
         self._embeddings = embeddings
         self._bm25 = bm25
@@ -165,6 +217,7 @@ class HybridRetriever:
         chunk_path = index_dir / "chunks.jsonl"
         embedding_path = index_dir / "embeddings.npy"
         faiss_path = index_dir / "semantic.index"
+        manifest_path = index_dir / "manifest.json"
 
         if not chunk_path.exists() or not embedding_path.exists() or not faiss_path.exists():
             raise FileNotFoundError(
@@ -182,12 +235,66 @@ class HybridRetriever:
                     metadata={k: str(v) for k, v in dict(payload.get("metadata", {})).items()},
                 )
             )
+        if not chunks:
+            raise ValueError(f"No chunks found in index file: {chunk_path}")
 
         embeddings = np.load(embedding_path).astype(np.float32)
+        if embeddings.ndim != 2:
+            raise ValueError(
+                f"Embeddings artifact must be a 2D array, got shape={embeddings.shape}"
+            )
+        if embeddings.shape[0] != len(chunks):
+            raise ValueError(
+                "Chunk/embedding mismatch in artifacts: "
+                f"chunk_count={len(chunks)} embedding_rows={embeddings.shape[0]}"
+            )
+
         tokenized_chunks = [tokenize(chunk.text) for chunk in chunks]
         bm25 = BM25Okapi(tokenized_chunks)
         faiss_index = faiss.read_index(str(faiss_path))
-        embedder = HashingEmbedder(dim=config.embedding_dim)
+        index_embedding_dim = int(embeddings.shape[1])
+
+        if faiss_index.d != index_embedding_dim:
+            raise ValueError(
+                "FAISS/embedding dimension mismatch in artifacts: "
+                f"faiss_dim={faiss_index.d} embedding_dim={index_embedding_dim}"
+            )
+        if faiss_index.ntotal != len(chunks):
+            raise ValueError(
+                "FAISS/chunk mismatch in artifacts: "
+                f"faiss_count={faiss_index.ntotal} chunk_count={len(chunks)}"
+            )
+
+        if manifest_path.exists():
+            manifest_payload = orjson.loads(manifest_path.read_bytes())
+            if not isinstance(manifest_payload, dict):
+                raise ValueError(f"Invalid manifest format at {manifest_path}")
+
+            manifest_chunk_count = manifest_payload.get("chunk_count")
+            if isinstance(manifest_chunk_count, int) and manifest_chunk_count != len(chunks):
+                raise ValueError(
+                    "Manifest chunk_count does not match chunk artifact: "
+                    f"manifest={manifest_chunk_count} chunks={len(chunks)}"
+                )
+
+            manifest_embedding_dim = manifest_payload.get("embedding_dim")
+            if (
+                isinstance(manifest_embedding_dim, int)
+                and manifest_embedding_dim != index_embedding_dim
+            ):
+                raise ValueError(
+                    "Manifest embedding_dim does not match embedding artifact: "
+                    f"manifest={manifest_embedding_dim} embeddings={index_embedding_dim}"
+                )
+
+        if config.embedding_dim != index_embedding_dim:
+            raise ValueError(
+                "Configured embedding_dim does not match indexed embeddings: "
+                f"config={config.embedding_dim} index={index_embedding_dim}. "
+                "Update retrieval config or rebuild the index."
+            )
+
+        embedder = HashingEmbedder(dim=index_embedding_dim)
 
         return cls(
             chunks=chunks,
@@ -228,6 +335,7 @@ class HybridRetriever:
         k = top_k or self._config.top_k
         if k <= 0:
             raise ValueError("top_k must be greater than zero")
+        k = min(k, len(self._chunks))
 
         lexical_scores = np.asarray(self._bm25.get_scores(tokenize(query)), dtype=np.float32)
 
@@ -246,8 +354,13 @@ class HybridRetriever:
             + self._config.semantic_weight * semantic_norm
         ).astype(np.float32)
 
+        if k == len(self._chunks):
+            candidate_indices = np.arange(len(self._chunks), dtype=np.int64)
+        else:
+            candidate_indices = np.argpartition(combined, -k)[-k:]
+
         ranked_indices = sorted(
-            range(len(self._chunks)),
+            (int(idx) for idx in candidate_indices),
             key=lambda idx: (
                 float(combined[idx]),
                 float(lexical_scores[idx]),

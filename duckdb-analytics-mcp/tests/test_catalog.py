@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 from pathlib import Path
 
 from duckdb_analytics_mcp.catalog import DatasetCatalog
@@ -25,3 +26,16 @@ def test_catalog_get_missing_raises(tmp_path: Path) -> None:
         raise AssertionError("expected missing dataset to raise")
     except ValueError as exc:
         assert "not found" in str(exc)
+
+
+def test_catalog_skips_symlink_escaping_dataset_root(tmp_path: Path) -> None:
+    (tmp_path / "ok.csv").write_text("id\n1\n", encoding="utf-8")
+
+    escaped = tmp_path / "escaped.csv"
+    os.symlink("/etc/passwd", escaped)
+
+    catalog = DatasetCatalog(tmp_path)
+    entries = catalog.scan()
+
+    names = {entry.name for entry in entries}
+    assert names == {"ok.csv"}

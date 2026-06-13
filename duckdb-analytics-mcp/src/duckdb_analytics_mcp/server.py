@@ -5,12 +5,13 @@ from __future__ import annotations
 import json
 from typing import Any, cast
 
+import duckdb
 from loguru import logger
 from mcp.server.auth.provider import AccessToken, TokenVerifier
 from mcp.server.auth.settings import AuthSettings
 from mcp.server.fastmcp import FastMCP
 from mcp.types import ToolAnnotations
-from pydantic import BaseModel
+from pydantic import BaseModel, ValidationError
 
 from duckdb_analytics_mcp.config import Settings, Transport, get_settings
 from duckdb_analytics_mcp.formatter import (
@@ -19,7 +20,13 @@ from duckdb_analytics_mcp.formatter import (
     render_health_markdown,
     render_query_markdown,
 )
-from duckdb_analytics_mcp.models import ResponseFormat
+from duckdb_analytics_mcp.models import (
+    DescribeDatasetRequest,
+    HealthRequest,
+    ListDatasetsRequest,
+    QueryDatasetRequest,
+    ResponseFormat,
+)
 from duckdb_analytics_mcp.service import AnalyticsService
 
 READ_ONLY_TOOL = ToolAnnotations(
@@ -68,9 +75,33 @@ def _format_error(message: str, response_format: ResponseFormat) -> str | dict[s
 def _resolve_response_format(raw_format: str) -> ResponseFormat:
     try:
         return ResponseFormat(raw_format)
-    except ValueError as exc:
-        allowed = ", ".join(option.value for option in ResponseFormat)
-        raise ValueError(f"response_format must be one of: {allowed}") from exc
+    except ValueError:
+        return ResponseFormat.MARKDOWN
+
+
+def _validation_error_to_message(exc: ValidationError) -> str:
+    return "; ".join(
+        f"{'.'.join(str(part) for part in error['loc'])}: {error['msg']}" for error in exc.errors()
+    )
+
+
+def _safe_error_message(exc: Exception) -> str:
+    if isinstance(exc, ValidationError):
+        return _validation_error_to_message(exc)
+    if isinstance(exc, (ValueError, TimeoutError)):
+        return str(exc)
+    if isinstance(exc, duckdb.Error):
+        return "Query execution failed. Verify SQL syntax and dataset schema."
+    return "Internal server error"
+
+
+def _log_error(operation: str, exc: Exception) -> None:
+    if isinstance(exc, duckdb.Error):
+        logger.warning("{} failed with DuckDB error: {}", operation, exc)
+    elif isinstance(exc, (ValidationError, ValueError, TimeoutError)):
+        logger.warning("{} failed: {}", operation, exc)
+    else:
+        logger.exception("{} failed with unexpected error", operation)
 
 
 def _auth_kwargs(settings: Settings) -> dict[str, Any]:
@@ -123,8 +154,12 @@ def build_server(settings: Settings | None = None) -> FastMCP:
         description="Catalog of available datasets under the configured dataset directory.",
     )
     def dataset_catalog_resource() -> str:
-        catalog = service.list_datasets(limit=runtime.max_limit, offset=0)
-        return render_catalog_markdown(catalog)
+        try:
+            catalog = service.list_datasets(limit=runtime.max_limit, offset=0)
+            return render_catalog_markdown(catalog)
+        except Exception as exc:  # pragma: no cover - defensive guard
+            _log_error("dataset_catalog_resource", exc)
+            return f"Error: {_safe_error_message(exc)}"
 
     @mcp.resource(
         "dataset://schema/{dataset_name}",
@@ -132,8 +167,12 @@ def build_server(settings: Settings | None = None) -> FastMCP:
         description="Schema and sample rows for a specific dataset.",
     )
     def dataset_schema_resource(dataset_name: str) -> str:
-        description = service.describe_dataset(dataset_name=dataset_name, sample_rows=5)
-        return render_description_markdown(description)
+        try:
+            description = service.describe_dataset(dataset_name=dataset_name, sample_rows=5)
+            return render_description_markdown(description)
+        except Exception as exc:  # pragma: no cover - defensive guard
+            _log_error("dataset_schema_resource", exc)
+            return f"Error: {_safe_error_message(exc)}"
 
     @mcp.tool(name="duckdb_analytics_health", annotations=READ_ONLY_TOOL)
     def duckdb_analytics_health(response_format: str = "markdown") -> str | dict[str, Any]:
@@ -146,8 +185,13 @@ def build_server(settings: Settings | None = None) -> FastMCP:
             Health payload in markdown or JSON.
         """
         fmt = _resolve_response_format(response_format)
-        health = service.health()
-        return _format_response(health, fmt, render_health_markdown(health))
+        try:
+            request = HealthRequest.model_validate({"response_format": response_format})
+            health = service.health()
+            return _format_response(health, request.response_format, render_health_markdown(health))
+        except Exception as exc:
+            _log_error("duckdb_analytics_health", exc)
+            return _format_error(_safe_error_message(exc), fmt)
 
     @mcp.tool(name="duckdb_analytics_list_datasets", annotations=READ_ONLY_TOOL)
     def duckdb_analytics_list_datasets(
@@ -165,13 +209,16 @@ def build_server(settings: Settings | None = None) -> FastMCP:
         Returns:
             Dataset catalog page.
         """
-        fmt = _resolve_response_format(response_format)
         try:
-            result = service.list_datasets(limit=limit, offset=offset)
-            return _format_response(result, fmt, render_catalog_markdown(result))
-        except (ValueError, TimeoutError) as exc:
-            logger.warning("list_datasets failed: {}", exc)
-            return _format_error(str(exc), fmt)
+            request = ListDatasetsRequest.model_validate(
+                {"limit": limit, "offset": offset, "response_format": response_format}
+            )
+            result = service.list_datasets(limit=request.limit, offset=request.offset)
+            return _format_response(result, request.response_format, render_catalog_markdown(result))
+        except Exception as exc:
+            _log_error("duckdb_analytics_list_datasets", exc)
+            fmt = _resolve_response_format(response_format)
+            return _format_error(_safe_error_message(exc), fmt)
 
     @mcp.tool(name="duckdb_analytics_describe_dataset", annotations=READ_ONLY_TOOL)
     def duckdb_analytics_describe_dataset(
@@ -189,13 +236,23 @@ def build_server(settings: Settings | None = None) -> FastMCP:
         Returns:
             Dataset profile including schema and sample rows.
         """
-        fmt = _resolve_response_format(response_format)
         try:
-            result = service.describe_dataset(dataset_name=dataset, sample_rows=sample_rows)
-            return _format_response(result, fmt, render_description_markdown(result))
-        except (ValueError, TimeoutError) as exc:
-            logger.warning("describe_dataset failed: {}", exc)
-            return _format_error(str(exc), fmt)
+            request = DescribeDatasetRequest.model_validate(
+                {
+                    "dataset": dataset,
+                    "sample_rows": sample_rows,
+                    "response_format": response_format,
+                }
+            )
+            result = service.describe_dataset(
+                dataset_name=request.dataset,
+                sample_rows=request.sample_rows,
+            )
+            return _format_response(result, request.response_format, render_description_markdown(result))
+        except Exception as exc:
+            _log_error("duckdb_analytics_describe_dataset", exc)
+            fmt = _resolve_response_format(response_format)
+            return _format_error(_safe_error_message(exc), fmt)
 
     @mcp.tool(name="duckdb_analytics_query_dataset", annotations=READ_ONLY_TOOL)
     def duckdb_analytics_query_dataset(
@@ -217,18 +274,27 @@ def build_server(settings: Settings | None = None) -> FastMCP:
         Returns:
             Query results with pagination metadata.
         """
-        fmt = _resolve_response_format(response_format)
         try:
-            result = service.query_dataset(
-                dataset_name=dataset,
-                sql=sql,
-                limit=limit,
-                offset=offset,
+            request = QueryDatasetRequest.model_validate(
+                {
+                    "dataset": dataset,
+                    "sql": sql,
+                    "limit": limit,
+                    "offset": offset,
+                    "response_format": response_format,
+                }
             )
-            return _format_response(result, fmt, render_query_markdown(result))
-        except (ValueError, TimeoutError) as exc:
-            logger.warning("query_dataset failed: {}", exc)
-            return _format_error(str(exc), fmt)
+            result = service.query_dataset(
+                dataset_name=request.dataset,
+                sql=request.sql,
+                limit=request.limit,
+                offset=request.offset,
+            )
+            return _format_response(result, request.response_format, render_query_markdown(result))
+        except Exception as exc:
+            _log_error("duckdb_analytics_query_dataset", exc)
+            fmt = _resolve_response_format(response_format)
+            return _format_error(_safe_error_message(exc), fmt)
 
     return mcp
 

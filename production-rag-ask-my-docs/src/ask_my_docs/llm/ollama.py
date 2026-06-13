@@ -102,10 +102,12 @@ class OllamaGenerator:
         self,
         base_url: str,
         timeout_seconds: float,
+        list_timeout_seconds: float,
         configured_model: str | None = None,
     ) -> None:
         self._base_url = base_url.rstrip("/")
         self._timeout_seconds = timeout_seconds
+        self._list_timeout_seconds = list_timeout_seconds
         self._configured_model = configured_model
         self._model: str | None = None
 
@@ -121,12 +123,19 @@ class OllamaGenerator:
         return self._model
 
     def _list_models(self) -> list[OllamaModelInfo]:
-        process = subprocess.run(
-            ["ollama", "list"],
-            capture_output=True,
-            text=True,
-            check=False,
-        )
+        try:
+            process = subprocess.run(
+                ["ollama", "list"],
+                capture_output=True,
+                text=True,
+                check=False,
+                timeout=self._list_timeout_seconds,
+            )
+        except subprocess.TimeoutExpired as exc:
+            raise RuntimeError(
+                f"`ollama list` timed out after {self._list_timeout_seconds:.1f}s"
+            ) from exc
+
         if process.returncode != 0:
             raise RuntimeError(
                 "Failed to run `ollama list`: "

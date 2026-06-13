@@ -30,7 +30,10 @@ class AnalyticsService:
 
     def __init__(self, settings: Settings) -> None:
         self._settings = settings
-        self._catalog = DatasetCatalog(settings.resolved_dataset_dir)
+        self._catalog = DatasetCatalog(
+            settings.resolved_dataset_dir,
+            cache_ttl_seconds=settings.catalog_cache_ttl_seconds,
+        )
         self._guard = SQLGuard(max_query_chars=settings.max_query_chars)
 
     def list_datasets(self, limit: int, offset: int) -> PaginatedDatasetsResult:
@@ -58,36 +61,35 @@ class AnalyticsService:
         entry = self._catalog.get(dataset_name)
         bounded_sample_rows = min(sample_rows, self._settings.max_sample_rows)
 
-        def _task() -> DatasetDescription:
-            with self._connect() as con:
-                self._register_source(con, entry)
+        def _task(con: duckdb.DuckDBPyConnection) -> DatasetDescription:
+            self._register_source(con, entry)
 
-                schema_rows = con.execute("DESCRIBE SELECT * FROM source").fetchall()
-                columns = [
-                    DatasetColumn(
-                        name=str(row[0]),
-                        data_type=str(row[1]),
-                        nullable=str(row[2]) if row[2] is not None else None,
-                    )
-                    for row in schema_rows
-                ]
-
-                row_count_row = con.execute("SELECT COUNT(*) FROM source").fetchone()
-                if row_count_row is None:
-                    raise ValueError("Failed to read dataset row count")
-                row_count = int(row_count_row[0])
-                _, rows = self._fetch_rows(
-                    con,
-                    "SELECT * FROM source LIMIT ?",
-                    [bounded_sample_rows],
+            schema_rows = con.execute("DESCRIBE SELECT * FROM source").fetchall()
+            columns = [
+                DatasetColumn(
+                    name=str(row[0]),
+                    data_type=str(row[1]),
+                    nullable=str(row[2]) if row[2] is not None else None,
                 )
+                for row in schema_rows
+            ]
 
-                return DatasetDescription(
-                    dataset=entry.to_summary(),
-                    row_count=row_count,
-                    columns=columns,
-                    sample_rows=rows,
-                )
+            row_count_row = con.execute("SELECT COUNT(*) FROM source").fetchone()
+            if row_count_row is None:
+                raise ValueError("Failed to read dataset row count")
+            row_count = int(row_count_row[0])
+            _, rows = self._fetch_rows(
+                con,
+                "SELECT * FROM source LIMIT ?",
+                [bounded_sample_rows],
+            )
+
+            return DatasetDescription(
+                dataset=entry.to_summary(),
+                row_count=row_count,
+                columns=columns,
+                sample_rows=rows,
+            )
 
         return self._run_with_timeout(_task)
 
@@ -97,37 +99,55 @@ class AnalyticsService:
         safe_sql = self._guard.validate(sql)
         bounded_limit = min(limit, self._settings.max_limit)
 
-        def _task() -> QueryResult:
-            with self._connect() as con:
-                self._register_source(con, entry)
+        def _task(con: duckdb.DuckDBPyConnection) -> QueryResult:
+            self._register_source(con, entry)
 
+            total_count_column = "__mcp_total_count_9f1b2c3d"
+            columns, rows = self._fetch_rows(
+                con,
+                (
+                    f"SELECT *, COUNT(*) OVER() AS {total_count_column} "
+                    f"FROM ({safe_sql}) AS guarded_query LIMIT ? OFFSET ?"
+                ),
+                [bounded_limit, offset],
+            )
+
+            total_count = 0
+            if rows:
+                raw_total_count = rows[0].get(total_count_column, 0)
+                if not isinstance(raw_total_count, (int, float, str)):
+                    raise ValueError("Failed to parse query row count")
+                total_count = int(raw_total_count)
+            elif offset > 0:
+                # Fallback only when page is empty at a non-zero offset.
                 total_count_row = con.execute(
                     f"SELECT COUNT(*) FROM ({safe_sql}) AS guarded_query"
                 ).fetchone()
                 if total_count_row is None:
                     raise ValueError("Failed to read query row count")
                 total_count = int(total_count_row[0])
-                columns, rows = self._fetch_rows(
-                    con,
-                    f"SELECT * FROM ({safe_sql}) AS guarded_query LIMIT ? OFFSET ?",
-                    [bounded_limit, offset],
-                )
 
-                has_more = offset + len(rows) < total_count
-                next_offset = offset + len(rows) if has_more else None
+            sanitized_columns = [column for column in columns if column != total_count_column]
+            sanitized_rows: list[dict[str, object]] = []
+            for row in rows:
+                row.pop(total_count_column, None)
+                sanitized_rows.append(row)
 
-                return QueryResult(
-                    dataset=dataset_name,
-                    sql=safe_sql,
-                    total_count=total_count,
-                    count=len(rows),
-                    limit=bounded_limit,
-                    offset=offset,
-                    has_more=has_more,
-                    next_offset=next_offset,
-                    columns=columns,
-                    rows=rows,
-                )
+            has_more = offset + len(sanitized_rows) < total_count
+            next_offset = offset + len(sanitized_rows) if has_more else None
+
+            return QueryResult(
+                dataset=dataset_name,
+                sql=safe_sql,
+                total_count=total_count,
+                count=len(sanitized_rows),
+                limit=bounded_limit,
+                offset=offset,
+                has_more=has_more,
+                next_offset=next_offset,
+                columns=sanitized_columns,
+                rows=sanitized_rows,
+            )
 
         return self._run_with_timeout(_task)
 
@@ -192,15 +212,28 @@ class AnalyticsService:
 
         return columns, rows
 
-    def _run_with_timeout(self, fn: Callable[[], T]) -> T:
-        """Run blocking DB work in a bounded-time worker thread."""
-        with ThreadPoolExecutor(max_workers=1) as executor:
-            future = executor.submit(fn)
+    def _run_with_timeout(self, fn: Callable[[duckdb.DuckDBPyConnection], T]) -> T:
+        """Run blocking DB work with bounded wall-clock execution time."""
+        connection = self._connect()
+        executor = ThreadPoolExecutor(max_workers=1)
+
+        def _wrapped_task() -> T:
             try:
-                return future.result(timeout=self._settings.query_timeout_seconds)
-            except FuturesTimeoutError as exc:
-                future.cancel()
-                logger.warning("Query timed out after {} seconds", self._settings.query_timeout_seconds)
-                raise TimeoutError(
-                    f"Operation timed out after {self._settings.query_timeout_seconds} seconds"
-                ) from exc
+                return fn(connection)
+            finally:
+                connection.close()
+
+        future = executor.submit(_wrapped_task)
+        try:
+            return future.result(timeout=self._settings.query_timeout_seconds)
+        except FuturesTimeoutError as exc:
+            logger.warning("Query timed out after {} seconds", self._settings.query_timeout_seconds)
+            try:
+                connection.interrupt()
+            except Exception:
+                logger.exception("Failed to interrupt timed-out DuckDB query")
+            raise TimeoutError(
+                f"Operation timed out after {self._settings.query_timeout_seconds} seconds"
+            ) from exc
+        finally:
+            executor.shutdown(wait=False, cancel_futures=True)
