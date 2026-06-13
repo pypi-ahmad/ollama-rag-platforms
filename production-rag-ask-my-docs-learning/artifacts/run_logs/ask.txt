@@ -1,15 +1,0 @@
-Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
-Loading weights:   0%|          | 0/103 [00:00<?, ?it/s]Loading weights: 100%|██████████| 103/103 [00:00<00:00, 6528.74it/s]
-Loading weights:   0%|          | 0/105 [00:00<?, ?it/s]Loading weights: 100%|██████████| 105/105 [00:00<00:00, 7060.44it/s]
-Answer (citation-enforced):
-- Billing Dispute Playbook All invoice disputes must be acknowledged within 1 business day. [1]
-- Standard-priority disputes have a target resolution SLA of 3 business days after acknowledgement. [1]
-- The formal root cause analysis document is due within 3 business days of service restoration. [2]
-- Required evidence for triage includes invoice ID, transaction reference, and the disputed contract line item. [1]
-
-Sources:
-[1] Billing Disputes (billing_disputes.md, chunk_id=billing_disputes::chunk-000)
-[2] Incident Sla (incident_sla.md, chunk_id=incident_sla::chunk-000)
-[3] Access Control (access_control.md, chunk_id=access_control::chunk-000)
-[4] Data Retention (data_retention.md, chunk_id=data_retention::chunk-000)
-[5] Onboarding Handover (onboarding_handover.md, chunk_id=onboarding_handover::chunk-000)
