@@ -1,0 +1,2005 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [3 0 R 5 0 R 7 0 R 9 0 R 11 0 R 13 0 R 15 0 R 17 0 R 19 0 R 21 0 R 23 0 R 25 0 R 27 0 R 29 0 R] /Count 14 >>
+endobj
+3 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 4 0 R /Resources << /Font << /F1 31 0 R >> >> >>
+endobj
+4 0 obj
+<< /Length 3491 >>
+stream
+BT
+/F1 9 Tf
+40 744 Td
+11 TL
+(# ? MASTER LEARNING HANDBOOK: ask-my-docs-rag) Tj
+T*
+() Tj
+T*
+(Authoring mode: static analysis only. No project code was executed, compiled, or tested for this) Tj
+T*
+(handbook.) Tj
+T*
+(Scope: full local tree excluding env-generated folders \(`.venv`, `.git` internals\).) Tj
+T*
+(Evidence standard: high-density source grounding via exact paths and line references.) Tj
+T*
+() Tj
+T*
+(---) Tj
+T*
+() Tj
+T*
+(## ? Module 1: Theoretical Foundations & Architecture) Tj
+T*
+() Tj
+T*
+(### 1.1 CS Theory & Definitions \(then how this repo implements each\)) Tj
+T*
+() Tj
+T*
+(1. **Retrieval-Augmented Generation \(RAG\)**) Tj
+T*
+(- Definition: a generation architecture that first retrieves relevant context from a corpus, then) Tj
+T*
+(conditions an LLM prompt on that context.) Tj
+T*
+(- In this repo:) Tj
+T*
+(  - Retrieval happens before generation in `RAGPipeline.answer` \(`rag.retrieve` span before) Tj
+T*
+(  `rag.generate`\).) Tj
+T*
+(    Source: `src/ask_my_docs/pipeline.py:53-64`) Tj
+T*
+(  - Retrieved chunks are passed to Ollama prompt construction as `[doc_id] chunk_text` blocks.) Tj
+T*
+(    Source: `src/ask_my_docs/llm/ollama.py:162-174`) Tj
+T*
+() Tj
+T*
+(2. **Hybrid Retrieval**) Tj
+T*
+(- Definition: combine lexical retrieval \(keyword/statistical\) and semantic retrieval \(embedding) Tj
+T*
+(similarity\).) Tj
+T*
+(- In this repo:) Tj
+T*
+(  - Lexical engine: `BM25Okapi`.) Tj
+T*
+(    Source: `src/ask_my_docs/retrieval/hybrid.py:13,198-200`) Tj
+T*
+(  - Semantic engine: FAISS `IndexFlatIP` with dense vectors.) Tj
+T*
+(    Source: `src/ask_my_docs/retrieval/hybrid.py:201`) Tj
+T*
+(  - Final score = weighted sum of normalized lexical + normalized semantic scores.) Tj
+T*
+(    Source: `src/ask_my_docs/retrieval/hybrid.py:114-121,350-353`) Tj
+T*
+(  - Default weights are `lexical_weight=0.45`, `semantic_weight=0.55`.) Tj
+T*
+(    Source: `src/ask_my_docs/settings.py:26-27`) Tj
+T*
+() Tj
+T*
+(3. **BM25 \(Best Matching 25\)**) Tj
+T*
+(- Definition: probabilistic ranking over tokenized text emphasizing term frequency and inverse) Tj
+T*
+(document frequency.) Tj
+T*
+(- In this repo:) Tj
+T*
+(  - Built from chunk token lists with `BM25Okapi\(tokenized_chunks\)`.) Tj
+T*
+(    Source: `src/ask_my_docs/retrieval/hybrid.py:198-200`) Tj
+T*
+(  - Query lexical scores from `self._bm25.get_scores\(tokenize\(query\)\)`.) Tj
+T*
+(    Source: `src/ask_my_docs/retrieval/hybrid.py:340`) Tj
+T*
+() Tj
+T*
+(4. **Vector Similarity Search \(FAISS IP\)**) Tj
+T*
+(- Definition: nearest-neighbor search in vector space using similarity metric \(inner product) Tj
+T*
+(here\).) Tj
+T*
+(- In this repo:) Tj
+T*
+(  - Query embedding searched with `self._faiss_index.search\(query_embedding[None, :], search_k\)`.) Tj
+T*
+(    Source: `src/ask_my_docs/retrieval/hybrid.py:344-346`) Tj
+T*
+(  - `search_k` heuristic is `min\(len\(chunks\), max\(k*4, k\)\)`.) Tj
+T*
+(    Source: `src/ask_my_docs/retrieval/hybrid.py:344`) Tj
+T*
+() Tj
+T*
+(5. **Deterministic Hash Embeddings**) Tj
+T*
+(- Definition: fixed embedding function from tokens to vector dimensions via hash, useful for) Tj
+T*
+(reproducibility/offline behavior.) Tj
+T*
+(- In this repo:) Tj
+T*
+(  - `HashingEmbedder.embed` uses `blake2b`, chooses index/sign, accumulates vector, then L2) Tj
+T*
+(  normalizes.) Tj
+T*
+(    Source: `src/ask_my_docs/retrieval/hybrid.py:67-87`) Tj
+T*
+(  - Embedding dimension is configured by `RetrievalConfig.embedding_dim` \(default `256`\).) Tj
+T*
+(    Source: `src/ask_my_docs/settings.py:28`) Tj
+T*
+() Tj
+T*
+ET
+endstream
+endobj
+5 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 6 0 R /Resources << /Font << /F1 31 0 R >> >> >>
+endobj
+6 0 obj
+<< /Length 3416 >>
+stream
+BT
+/F1 9 Tf
+40 744 Td
+11 TL
+(6. **Chunking**) Tj
+T*
+(- Definition: partition source docs into overlapping windows to improve retrieval granularity.) Tj
+T*
+(- In this repo:) Tj
+T*
+(  - Default chunk params: `chunk_size_tokens=120`, `chunk_overlap_tokens=20`.) Tj
+T*
+(    Source: `src/ask_my_docs/settings.py:23-24`) Tj
+T*
+(  - Chunk IDs follow `"{doc_id}::chunk-{n}"`; metadata stores `start_word`.) Tj
+T*
+(    Source: `src/ask_my_docs/retrieval/hybrid.py:99-108`) Tj
+T*
+() Tj
+T*
+(7. **Object-Oriented + Dataclass Design**) Tj
+T*
+(- Definition:) Tj
+T*
+(  - OOP organizes behavior/state in classes.) Tj
+T*
+(  - Dataclasses provide lightweight typed records.) Tj
+T*
+(- In this repo:) Tj
+T*
+(  - OOP service classes: `HybridRetriever`, `OllamaGenerator`, `MetricsStore`, `RAGPipeline`.) Tj
+T*
+(    Source: `src/ask_my_docs/retrieval/hybrid.py:124`, `src/ask_my_docs/llm/ollama.py:98`,) Tj
+T*
+(    `src/ask_my_docs/observability/metrics_store.py:35`, `src/ask_my_docs/pipeline.py:23`) Tj
+T*
+(  - Dataclass records: `Document`, `Chunk`, `RetrievedChunk`, `RAGAnswer`, `RequestMetricRecord`,) Tj
+T*
+(  `EvalExample`, `EvalReport`.) Tj
+T*
+(    Source: `src/ask_my_docs/models.py:10,25,35,46`,) Tj
+T*
+(    `src/ask_my_docs/observability/metrics_store.py:15`, `src/ask_my_docs/evaluation/runner.py:16,25`) Tj
+T*
+() Tj
+T*
+(8. **Observability \(Tracing + Metrics\)**) Tj
+T*
+(- Definition: collect operational telemetry for latency, costs, and quality signals.) Tj
+T*
+(- In this repo:) Tj
+T*
+(  - Tracing: OpenTelemetry exporter writes JSONL spans \(`name`, `trace_id`, `duration_ms`,) Tj
+T*
+(  `attributes`\).) Tj
+T*
+(    Source: `src/ask_my_docs/observability/tracing.py:18-44`) Tj
+T*
+(  - Request metrics: DuckDB table `rag_request_metrics` captures latency/tokens/cost/quality fields.) Tj
+T*
+(    Source: `src/ask_my_docs/observability/metrics_store.py:69-85`) Tj
+T*
+() Tj
+T*
+(9. **Regression Gating**) Tj
+T*
+(- Definition: fail deployment/CI when quality drops or latency/cost worsens beyond policy.) Tj
+T*
+(- In this repo:) Tj
+T*
+(  - Gate config model in YAML: absolute + regression blocks.) Tj
+T*
+(    Source: `configs/regression_thresholds.yaml:1-11`, `src/ask_my_docs/evaluation/gating.py:12-31`) Tj
+T*
+(  - Gate eval compares current metrics to absolute bounds and optional baseline deltas.) Tj
+T*
+(    Source: `src/ask_my_docs/evaluation/gating.py:52-124`) Tj
+T*
+() Tj
+T*
+(10. **Privacy-by-default Question Storage**) Tj
+T*
+(- Definition: avoid storing raw user input unless explicitly enabled.) Tj
+T*
+(- In this repo:) Tj
+T*
+(  - `observability_store_raw_questions=False` default.) Tj
+T*
+(    Source: `src/ask_my_docs/settings.py:55`) Tj
+T*
+(  - Question is hashed/redacted as `<redacted:sha256:{digest}:len={n}>` unless enabled.) Tj
+T*
+(    Source: `src/ask_my_docs/pipeline.py:150-154`) Tj
+T*
+(  - Verified by tests.) Tj
+T*
+(    Source: `tests/test_pipeline.py:55,68,82`) Tj
+T*
+() Tj
+T*
+(### 1.2 System Topology \(ASCII\)) Tj
+T*
+() Tj
+T*
+(```text) Tj
+T*
+(User CLI) Tj
+T*
+(  |) Tj
+T*
+(  | ask-my-docs ingest / ask / metrics-summary / eval) Tj
+T*
+(  v) Tj
+T*
+(src/ask_my_docs/cli.py) Tj
+T*
+(  |) Tj
+T*
+(  +--> settings: AppSettings \(env prefix ASK_MY_DOCS_\)) Tj
+T*
+(  |     \(src/ask_my_docs/settings.py\)) Tj
+T*
+(  |) Tj
+T*
+(  +--> ingest path) Tj
+T*
+(  |      load_documents -> HybridRetriever.from_documents -> save index artifacts) Tj
+T*
+(  |      \(src/ask_my_docs/retrieval/hybrid.py\)) Tj
+T*
+(  |) Tj
+T*
+ET
+endstream
+endobj
+7 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 8 0 R /Resources << /Font << /F1 31 0 R >> >> >>
+endobj
+8 0 obj
+<< /Length 4270 >>
+stream
+BT
+/F1 9 Tf
+40 744 Td
+11 TL
+(  +--> ask path) Tj
+T*
+(  |      _build_pipeline:) Tj
+T*
+(  |        configure_tracing -> JsonLineSpanExporter -> traces.jsonl) Tj
+T*
+(  |        MetricsStore\(DuckDB\) -> rag_request_metrics table) Tj
+T*
+(  |        HybridRetriever.load\(index\)) Tj
+T*
+(  |        OllamaGenerator\(/api/generate, temp=0.1\)) Tj
+T*
+(  |        CostCalculator\(TokenPricing\)) Tj
+T*
+(  |      RAGPipeline.answer:) Tj
+T*
+(  |        retrieve -> generate -> citations -> cost -> metrics row) Tj
+T*
+(  |) Tj
+T*
+(  +--> eval path) Tj
+T*
+(        load_eval_examples\(jsonl\)) Tj
+T*
+(        run_evaluation \(F1, EM, recall@k, p50/p95, cost, tokens\)) Tj
+T*
+(        optional gate \(absolute + regression vs baseline\)) Tj
+T*
+(        optional baseline update) Tj
+T*
+(```) Tj
+T*
+() Tj
+T*
+(Primary evidence: `src/ask_my_docs/cli.py:56-90,93-273`, `src/ask_my_docs/pipeline.py:42-133`,) Tj
+T*
+(`src/ask_my_docs/retrieval/hybrid.py:214-383`, `src/ask_my_docs/llm/ollama.py:150-222`,) Tj
+T*
+(`src/ask_my_docs/observability/metrics_store.py:69-313`,) Tj
+T*
+(`src/ask_my_docs/evaluation/runner.py:50-137`, `src/ask_my_docs/evaluation/gating.py:45-124`.) Tj
+T*
+() Tj
+T*
+(### 1.3 Technology Stack with Exact Roles and Real Parameters) Tj
+T*
+() Tj
+T*
+(| Component | Exact dependency/config | Role in project | Where used |) Tj
+T*
+(|---|---|---|---|) Tj
+T*
+(| Python runtime | `requires-python = ">=3.11"` | Language/runtime baseline | `pyproject.toml:6` |) Tj
+T*
+(| Typer | `typer>=0.13.0` | CLI command surface \(`ingest`, `ask`, `metrics-summary`, `eval`\) |) Tj
+T*
+(`pyproject.toml:20`, `src/ask_my_docs/cli.py:28,93,118,157,188` |) Tj
+T*
+(| Pydantic + pydantic-settings | `pydantic>=2.9.0`, `pydantic-settings>=2.5.0` | Typed config +) Tj
+T*
+(env loading | `pyproject.toml:16-17`, `src/ask_my_docs/settings.py:8-38` |) Tj
+T*
+(| Env prefix | `ASK_MY_DOCS_` | Namespaces runtime env vars | `src/ask_my_docs/settings.py:35` |) Tj
+T*
+(| Retriever defaults | `chunk_size_tokens=120`, `chunk_overlap_tokens=20`, `top_k=4`,) Tj
+T*
+(`lexical_weight=0.45`, `semantic_weight=0.55`, `embedding_dim=256` | Retrieval behavior + index) Tj
+T*
+(compatibility | `src/ask_my_docs/settings.py:23-28` |) Tj
+T*
+(| rank-bm25 | `rank-bm25>=0.2.2` | Lexical scoring | `pyproject.toml:19`,) Tj
+T*
+(`src/ask_my_docs/retrieval/hybrid.py:13,340` |) Tj
+T*
+(| FAISS CPU | `faiss-cpu>=1.9.0` | Semantic nearest-neighbor index/search | `pyproject.toml:9`,) Tj
+T*
+(`src/ask_my_docs/retrieval/hybrid.py:10,201,345` |) Tj
+T*
+(| NumPy | `numpy>=1.26.0` | Embeddings matrix + score arrays + normalization |) Tj
+T*
+(`pyproject.toml:11`, `src/ask_my_docs/retrieval/hybrid.py:11,73-87,114-121,344-353` |) Tj
+T*
+(| Ollama HTTP API | `POST {base_url}/api/generate` | Grounded generation backend |) Tj
+T*
+(`src/ask_my_docs/llm/ollama.py:180-187` |) Tj
+T*
+(| Generation parameter | `options: {"temperature": 0.1}` | Low-variance answer generation |) Tj
+T*
+(`src/ask_my_docs/llm/ollama.py:177` |) Tj
+T*
+(| Model discovery | `subprocess.run\(["ollama","list"]\)` + local-first selection | Selects) Tj
+T*
+(configured or first local model | `src/ask_my_docs/llm/ollama.py:125-148`, `63-96` |) Tj
+T*
+(| OpenTelemetry | `opentelemetry-api>=1.28.0`, `opentelemetry-sdk>=1.28.0` | Structured trace) Tj
+T*
+(spans | `pyproject.toml:12-13`, `src/ask_my_docs/observability/tracing.py:10-13,59-71` |) Tj
+T*
+(| DuckDB | `duckdb>=1.1.0` | Request metrics warehouse + aggregate summaries | `pyproject.toml:8`,) Tj
+T*
+(`src/ask_my_docs/observability/metrics_store.py:35-313` |) Tj
+T*
+(| Polars | `polars>=1.9.0` | Eval aggregation frame/quantiles | `pyproject.toml:15`,) Tj
+T*
+(`src/ask_my_docs/evaluation/runner.py:8,108-122` |) Tj
+T*
+(| YAML | `pyyaml>=6.0.2` | Gate config parsing | `pyproject.toml:18`,) Tj
+T*
+(`src/ask_my_docs/evaluation/gating.py:8,45-49` |) Tj
+T*
+(| orjson | `orjson>=3.10.0` | Fast JSON read/write | `pyproject.toml:14`,) Tj
+T*
+(`src/ask_my_docs/utils.py:7,27,38` |) Tj
+T*
+(| loguru | `loguru>=0.7.2` | CLI logging and clean error output | `pyproject.toml:10`,) Tj
+T*
+(`src/ask_my_docs/cli.py:11,35-41` |) Tj
+T*
+(| CI workflow | GitHub Actions `quality-and-regression-gate` | Lint + typing + tests + ingest +) Tj
+T*
+(eval + gate | `.github/workflows/ci.yml:1-49` |) Tj
+T*
+() Tj
+T*
+(---) Tj
+T*
+() Tj
+T*
+ET
+endstream
+endobj
+9 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 10 0 R /Resources << /Font << /F1 31 0 R >> >> >>
+endobj
+10 0 obj
+<< /Length 4471 >>
+stream
+BT
+/F1 9 Tf
+40 744 Td
+11 TL
+(## ? Module 2: Strict Repository Tour & Mapping) Tj
+T*
+() Tj
+T*
+(### 2.1 Directory Mapping \(complete scope\)) Tj
+T*
+() Tj
+T*
+(| File/Directory Path | Primary Responsibility | Key Classes/Functions Exported | Actual) Tj
+T*
+(Configurations/Variables Defined |) Tj
+T*
+(|---|---|---|---|) Tj
+T*
+(| `.` | Repository root for RAG platform | - | - |) Tj
+T*
+(| `./.agents` | Local agent metadata folder \(empty in current scope\) | - | - |) Tj
+T*
+(| `./.codex` | Local codex metadata folder \(empty in current scope\) | - | - |) Tj
+T*
+(| `./.github` | CI/CD and automation metadata | - | - |) Tj
+T*
+(| `./.github/workflows` | GitHub Action workflow definitions | - | `ci` workflow |) Tj
+T*
+(| `./artifacts` | Stored outputs \(metrics baselines/tutorial artifacts\) | - | JSON baselines,) Tj
+T*
+(notebook artifacts |) Tj
+T*
+(| `./artifacts/notebook_tutorial` | Tutorial-scoped reproducible outputs | - |) Tj
+T*
+(`baseline_metrics.json`, `current_metrics.json`, etc. |) Tj
+T*
+(| `./artifacts/notebook_tutorial/index` | Persisted retrieval index artifacts | - | `chunk_count`,) Tj
+T*
+(`embedding_dim`, weights manifest |) Tj
+T*
+(| `./artifacts/notebook_tutorial/observability` | Tutorial observability outputs | - |) Tj
+T*
+(`metrics.duckdb`, `traces.jsonl` |) Tj
+T*
+(| `./configs` | Runtime/CI policy configs | - | regression threshold values |) Tj
+T*
+(| `./data` | Source docs + evaluation set | - | policy text corpus + eval JSONL |) Tj
+T*
+(| `./data/docs` | Ground-truth documentation corpus for retrieval | - | 5 policy documents |) Tj
+T*
+(| `./data/eval` | Offline evaluation dataset | - | 5 JSONL evaluation examples |) Tj
+T*
+(| `./notebooks` | Stepwise educational notebook | - | `tutorial_observability_ollama.ipynb` |) Tj
+T*
+(| `./src` | Python package source root | - | - |) Tj
+T*
+(| `./src/ask_my_docs` | Main package root | package exports/version | `__version__ = "0.1.0"` |) Tj
+T*
+(| `./src/ask_my_docs/evaluation` | Quality metrics + evaluation runner + gating | metric/gating) Tj
+T*
+(APIs | aggregate metric definitions |) Tj
+T*
+(| `./src/ask_my_docs/llm` | LLM backend integration layer | Ollama backend exports |) Tj
+T*
+(temperature/model resolution behavior |) Tj
+T*
+(| `./src/ask_my_docs/observability` | Tracing/cost/metrics persistence | observability exports |) Tj
+T*
+(schema/indexes/summarization |) Tj
+T*
+(| `./src/ask_my_docs/retrieval` | Document loading/chunking/hybrid search | retriever exports |) Tj
+T*
+(chunking, embedding, weighting |) Tj
+T*
+(| `./tests` | Unit tests for core reliability behavior | test modules | expected behavior) Tj
+T*
+(constraints |) Tj
+T*
+() Tj
+T*
+(### 2.2 File Mapping \(complete scope\)) Tj
+T*
+() Tj
+T*
+(| File/Directory Path | Primary Responsibility | Key Classes/Functions Exported | Actual) Tj
+T*
+(Configurations/Variables Defined |) Tj
+T*
+(|---|---|---|---|) Tj
+T*
+(| `./.coverage` | Coverage artifact DB \(SQLite format\) | - | coverage tables \(`arc`, `file`,) Tj
+T*
+(`line_bits`, etc.\) |) Tj
+T*
+(| `./.github/workflows/ci.yml` | CI pipeline definition | - | job `quality-and-regression-gate`,) Tj
+T*
+(steps for lint/type/test/ingest/eval/gate |) Tj
+T*
+(| `./.gitignore` | Ignore patterns for generated artifacts | - | ignores `.venv`, caches,) Tj
+T*
+(`artifacts/index`, `artifacts/eval`, `artifacts/observability` |) Tj
+T*
+(| `./LICENSE` | Project license | - | MIT license text |) Tj
+T*
+(| `./README.md` | User-facing project guide | - | env var table, CLI usage, metrics and) Tj
+T*
+(limitations |) Tj
+T*
+(| `./artifacts/baseline_metrics.json` | Baseline eval report used by gate | - | `aggregate` and) Tj
+T*
+(`per_example` metric payloads |) Tj
+T*
+(| `./artifacts/notebook_tutorial/baseline_metrics.json` | Notebook-local baseline metrics | - |) Tj
+T*
+(aggregate/per-example evaluation report |) Tj
+T*
+(| `./artifacts/notebook_tutorial/current_metrics.json` | Notebook-local current run metrics | - |) Tj
+T*
+(aggregate/per-example evaluation report |) Tj
+T*
+(| `./artifacts/notebook_tutorial/index/chunks.jsonl` | Chunk artifact for retriever | - | keys:) Tj
+T*
+(`chunk_id`, `doc_id`, `text`, `metadata.start_word`, `metadata.path` |) Tj
+T*
+(| `./artifacts/notebook_tutorial/index/embeddings.npy` | Dense embeddings matrix | - | shape `\(5,) Tj
+T*
+(256\)` \(from file metadata\) |) Tj
+T*
+(| `./artifacts/notebook_tutorial/index/manifest.json` | Index compatibility manifest | - |) Tj
+T*
+(`chunk_count=5`, `embedding_dim=256`, `lexical_weight=0.45`, `semantic_weight=0.55` |) Tj
+T*
+ET
+endstream
+endobj
+11 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 12 0 R /Resources << /Font << /F1 31 0 R >> >> >>
+endobj
+12 0 obj
+<< /Length 5234 >>
+stream
+BT
+/F1 9 Tf
+40 744 Td
+11 TL
+(| `./artifacts/notebook_tutorial/index/semantic.index` | FAISS index binary | - | semantic vector) Tj
+T*
+(index artifact |) Tj
+T*
+(| `./artifacts/notebook_tutorial/observability/metrics.duckdb` | Observability DB artifact | - |) Tj
+T*
+(DuckDB metrics warehouse file |) Tj
+T*
+(| `./artifacts/notebook_tutorial/observability/traces.jsonl` | Span trace log artifact | - | JSONL) Tj
+T*
+(spans with `name`, `trace_id`, `duration_ms`, `attributes` |) Tj
+T*
+(| `./artifacts/notebook_tutorial/sample_answer.json` | Example `ask` payload output | - |) Tj
+T*
+(answer/citations/tokens/cost/latency/request identifiers |) Tj
+T*
+(| `./configs/regression_thresholds.yaml` | Gate policy config | - | absolute + regression) Tj
+T*
+(threshold values |) Tj
+T*
+(| `./data/docs/access_control.md` | Source policy document | - | access review cadence, MFA) Tj
+T*
+(requirement, retention duration |) Tj
+T*
+(| `./data/docs/billing_disputes.md` | Source policy document | - | SLA and escalation policy) Tj
+T*
+(values |) Tj
+T*
+(| `./data/docs/data_retention.md` | Source policy document | - | retention, deletion, backup) Tj
+T*
+(rotation values |) Tj
+T*
+(| `./data/docs/incident_sla.md` | Source policy document | - | sev1/sev2 acknowledgement and) Tj
+T*
+(restoration targets |) Tj
+T*
+(| `./data/docs/onboarding_handover.md` | Source policy document | - | onboarding handover and) Tj
+T*
+(checkpoint cadence |) Tj
+T*
+(| `./data/eval/eval_set.jsonl` | Evaluation dataset | - | keys per row: `question`,) Tj
+T*
+(`reference_answer`, `expected_doc_ids` |) Tj
+T*
+(| `./notebooks/tutorial_observability_ollama.ipynb` | Educational end-to-end tutorial | notebook) Tj
+T*
+(cells | 10-step walkthrough with isolated artifact paths |) Tj
+T*
+(| `./pyproject.toml` | Python packaging/tooling config | script entrypoint `ask-my-docs` |) Tj
+T*
+(dependencies, dev dependencies, ruff/mypy/pytest config |) Tj
+T*
+(| `./src/ask_my_docs/__init__.py` | Package metadata | `__version__` | `__version__ = "0.1.0"` |) Tj
+T*
+(| `./src/ask_my_docs/cli.py` | CLI orchestration layer | `app`, command funcs: `ingest`, `ask`,) Tj
+T*
+(`metrics_summary`, `eval` | `DEFAULT_EVAL_OUTPUT`, `DEFAULT_BASELINE_PATH` |) Tj
+T*
+(| `./src/ask_my_docs/evaluation/__init__.py` | Evaluation package marker | `__all__` | empty) Tj
+T*
+(export list |) Tj
+T*
+(| `./src/ask_my_docs/evaluation/gating.py` | Regression gate logic | `AbsoluteThresholds`,) Tj
+T*
+(`RegressionThresholds`, `GateConfig`, `GateResult`, `load_gate_config`, `evaluate_gate` | all gate) Tj
+T*
+(fields and pass/fail logic |) Tj
+T*
+(| `./src/ask_my_docs/evaluation/metrics.py` | Eval metric functions | `exact_match_score`,) Tj
+T*
+(`token_f1_score`, `retrieval_recall_at_k` | token-normalized EM/F1 definitions |) Tj
+T*
+(| `./src/ask_my_docs/evaluation/runner.py` | Eval runner and report writer | `EvalExample`,) Tj
+T*
+(`EvalReport`, `load_eval_examples`, `run_evaluation`, `save_eval_report` | aggregate fields) Tj
+T*
+(\(`answer_f1_mean`, `latency_p95_ms`, `avg_cost_usd`, etc.\) |) Tj
+T*
+(| `./src/ask_my_docs/llm/__init__.py` | LLM package exports | `OllamaGeneration`,) Tj
+T*
+(`OllamaGenerator`, `OllamaModelInfo`, parser/resolver funcs | `__all__` export contract |) Tj
+T*
+(| `./src/ask_my_docs/llm/ollama.py` | Ollama integration backend | `OllamaModelInfo`,) Tj
+T*
+(`OllamaGeneration`, `parse_ollama_list`, `resolve_ollama_model`, `OllamaGenerator` | prompt) Tj
+T*
+(template, `temperature=0.1`, `/api/generate` endpoint |) Tj
+T*
+(| `./src/ask_my_docs/models.py` | Shared datamodel layer | `Document`, `Chunk`, `RetrievedChunk`,) Tj
+T*
+(`RAGAnswer` | typed fields for IDs, tokens, costs, latencies, timestamps |) Tj
+T*
+(| `./src/ask_my_docs/observability/__init__.py` | Observability exports | `CostCalculator`,) Tj
+T*
+(`TokenPricing`, `MetricsStore`, `RequestMetricRecord`, `configure_tracing` | `__all__` export) Tj
+T*
+(contract |) Tj
+T*
+(| `./src/ask_my_docs/observability/cost.py` | Cost estimation logic | `TokenPricing`,) Tj
+T*
+(`CostCalculator` | prompt/completion cost computation and rounding |) Tj
+T*
+(| `./src/ask_my_docs/observability/metrics_store.py` | DuckDB metrics persistence/summarization |) Tj
+T*
+(`RequestMetricRecord`, `MetricsStore` methods \(`record`, `update_quality`, `summarize`, `close`\) |) Tj
+T*
+(`rag_request_metrics` schema, upsert behavior, p50/p95 SQL |) Tj
+T*
+(| `./src/ask_my_docs/observability/tracing.py` | Trace exporter setup | `JsonLineSpanExporter`,) Tj
+T*
+(`configure_tracing` | `_CONFIGURED` guard, JSONL span payload keys |) Tj
+T*
+(| `./src/ask_my_docs/pipeline.py` | Core request pipeline | `RAGPipeline` methods: `answer`,) Tj
+T*
+(`update_quality_metrics`, `to_payload` | `_CITATION_RE`, redaction format, span attributes |) Tj
+T*
+(| `./src/ask_my_docs/retrieval/__init__.py` | Retrieval package exports | `HybridRetriever`,) Tj
+T*
+(`load_documents` | `__all__` export contract |) Tj
+T*
+(| `./src/ask_my_docs/retrieval/hybrid.py` | Hybrid retriever implementation | `_sanitize_doc_id`,) Tj
+T*
+(`load_documents`, `HashingEmbedder`, `_chunk_document`, `_normalize`, `HybridRetriever` | manifest) Tj
+T*
+(fields, weighted scoring, index compatibility checks |) Tj
+T*
+(| `./src/ask_my_docs/settings.py` | Runtime settings contract | `PricingConfig`,) Tj
+T*
+ET
+endstream
+endobj
+13 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 14 0 R /Resources << /Font << /F1 31 0 R >> >> >>
+endobj
+14 0 obj
+<< /Length 3328 >>
+stream
+BT
+/F1 9 Tf
+40 744 Td
+11 TL
+(`RetrievalConfig`, `AppSettings`, `get_settings` | all `ASK_MY_DOCS_*` defaults and) Tj
+T*
+(retrieval/pricing defaults |) Tj
+T*
+(| `./src/ask_my_docs/utils.py` | Shared utility helpers | `tokenize`, `ensure_dir`, `read_json`,) Tj
+T*
+(`write_json` | `_WORD_RE`, stable JSON serialization options |) Tj
+T*
+(| `./tests/test_cli.py` | CLI behavior tests | test functions | validates clean errors, decoupled) Tj
+T*
+(metrics-summary behavior |) Tj
+T*
+(| `./tests/test_costing.py` | Cost calculator tests | test functions | validates prompt+completion) Tj
+T*
+(rate arithmetic |) Tj
+T*
+(| `./tests/test_gating.py` | Gate logic tests | test functions | validates pass/fail under) Tj
+T*
+(explicit thresholds |) Tj
+T*
+(| `./tests/test_metrics_store.py` | Metrics store tests | test functions | validates p50/p95) Tj
+T*
+(aggregation and upsert semantics |) Tj
+T*
+(| `./tests/test_ollama.py` | Ollama utility tests | test functions | validates `ollama list`) Tj
+T*
+(parsing/model selection/timeout handling |) Tj
+T*
+(| `./tests/test_pipeline.py` | Pipeline behavior tests | test functions + `_StubGenerator` |) Tj
+T*
+(validates question redaction/raw mode/citation parser |) Tj
+T*
+(| `./tests/test_retrieval.py` | Retrieval artifact/tests | test functions | validates unique doc) Tj
+T*
+(IDs and embedding-dimension mismatch errors |) Tj
+T*
+(| `./uv.lock` | Fully resolved dependency lock | - | resolved package versions and metadata for) Tj
+T*
+(reproducible installs |) Tj
+T*
+() Tj
+T*
+(---) Tj
+T*
+() Tj
+T*
+(## ? Module 3: Line-by-Line Code & Output Breakdown) Tj
+T*
+() Tj
+T*
+(This module follows the real runtime flows in the codebase and ties them to exact variable names,) Tj
+T*
+(schemas, and artifacts.) Tj
+T*
+() Tj
+T*
+(### 3.1 Flow A: `ingest` \(source docs -> hybrid index\)) Tj
+T*
+() Tj
+T*
+(#### Step-by-step execution) Tj
+T*
+() Tj
+T*
+(1. CLI command enters `ingest\(...\)`.) Tj
+T*
+(Source: `src/ask_my_docs/cli.py:93`) Tj
+T*
+() Tj
+T*
+(2. `docs_dir` resolves to CLI option or `settings.docs_dir`.) Tj
+T*
+(Source: `src/ask_my_docs/cli.py:100-101`, `src/ask_my_docs/settings.py:48`) Tj
+T*
+() Tj
+T*
+(3. `load_documents\(source_dir\)` recursively reads `.md`/`.txt` files.) Tj
+T*
+(Source: `src/ask_my_docs/cli.py:103`, `src/ask_my_docs/retrieval/hybrid.py:27-65`) Tj
+T*
+() Tj
+T*
+(4. Document IDs are derived from relative path stem and sanitized by `_sanitize_doc_id`;) Tj
+T*
+(collisions use `blake2b` suffix.) Tj
+T*
+(Source: `src/ask_my_docs/retrieval/hybrid.py:22-25,38-52`) Tj
+T*
+() Tj
+T*
+(5. `HybridRetriever.from_documents\(...\)` chunks docs via `_chunk_document`.) Tj
+T*
+(Source: `src/ask_my_docs/cli.py:104`, `src/ask_my_docs/retrieval/hybrid.py:175-195,89-112`) Tj
+T*
+() Tj
+T*
+(6. Embeddings are built by `HashingEmbedder\(dim=config.embedding_dim\)`, and FAISS index is) Tj
+T*
+(`IndexFlatIP`.) Tj
+T*
+(Source: `src/ask_my_docs/retrieval/hybrid.py:194-202`) Tj
+T*
+() Tj
+T*
+(7. Retriever saves artifacts \(`chunks.jsonl`, `embeddings.npy`, `semantic.index`,) Tj
+T*
+(`manifest.json`\).) Tj
+T*
+(Source: `src/ask_my_docs/retrieval/hybrid.py:308-330`) Tj
+T*
+() Tj
+T*
+(8. Manifest includes:) Tj
+T*
+(- `chunk_count`) Tj
+T*
+(- `embedding_dim`) Tj
+T*
+(- `lexical_weight`) Tj
+T*
+(- `semantic_weight`) Tj
+T*
+(Source: `src/ask_my_docs/retrieval/hybrid.py:322-327`) Tj
+T*
+() Tj
+T*
+(#### Real input schema) Tj
+T*
+ET
+endstream
+endobj
+15 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 16 0 R /Resources << /Font << /F1 31 0 R >> >> >>
+endobj
+16 0 obj
+<< /Length 2806 >>
+stream
+BT
+/F1 9 Tf
+40 744 Td
+11 TL
+(- Source docs are plain text markdown/txt files in `data/docs`.) Tj
+T*
+(Source: `data/docs/*.md`) Tj
+T*
+() Tj
+T*
+(Example facts from corpus:) Tj
+T*
+(- Access reviews every 90 days; MFA required for admin/support-console accounts.) Tj
+T*
+(  Source: `data/docs/access_control.md:3`) Tj
+T*
+(- Billing disputes acknowledged in 1 business day; enterprise resolved within 24 hours.) Tj
+T*
+(  Source: `data/docs/billing_disputes.md:3`) Tj
+T*
+() Tj
+T*
+(#### Real output schema) Tj
+T*
+(`chunks.jsonl` row keys:) Tj
+T*
+(- `chunk_id`) Tj
+T*
+(- `doc_id`) Tj
+T*
+(- `text`) Tj
+T*
+(- `metadata` with `start_word`, `path`) Tj
+T*
+(Source: `artifacts/notebook_tutorial/index/chunks.jsonl:1-5`) Tj
+T*
+() Tj
+T*
+(`manifest.json`:) Tj
+T*
+(- `"chunk_count": 5`) Tj
+T*
+(- `"embedding_dim": 256`) Tj
+T*
+(- `"lexical_weight": 0.45`) Tj
+T*
+(- `"semantic_weight": 0.55`) Tj
+T*
+(Source: `artifacts/notebook_tutorial/index/manifest.json:2-5`) Tj
+T*
+() Tj
+T*
+(### 3.2 Flow B: `ask` \(question -> retrieved context -> Ollama -> observed answer\)) Tj
+T*
+() Tj
+T*
+(#### Step-by-step execution) Tj
+T*
+() Tj
+T*
+(1. CLI `ask\(question, top_k, output\)` constructs pipeline via `_build_pipeline\(\)`.) Tj
+T*
+(Source: `src/ask_my_docs/cli.py:118-132`) Tj
+T*
+() Tj
+T*
+(2. `_build_pipeline\(\)` wires:) Tj
+T*
+(- tracing \(`configure_tracing`\)) Tj
+T*
+(- metrics store \(`MetricsStore`\)) Tj
+T*
+(- retriever \(`HybridRetriever.load`\)) Tj
+T*
+(- cost calculator \(`CostCalculator\(TokenPricing\(...\)\)`\)) Tj
+T*
+(- generator \(`OllamaGenerator\(...\)`\)) Tj
+T*
+(Source: `src/ask_my_docs/cli.py:56-90`) Tj
+T*
+() Tj
+T*
+(3. `pipeline.answer\(question, top_k\)` starts request span and generates `request_id`.) Tj
+T*
+(Source: `src/ask_my_docs/pipeline.py:42-55`) Tj
+T*
+() Tj
+T*
+(4. Retrieval phase:) Tj
+T*
+(- `retrieved = self._retriever.search\(query=question, top_k=top_k\)`) Tj
+T*
+(Source: `src/ask_my_docs/pipeline.py:58-60`) Tj
+T*
+() Tj
+T*
+(5. Generation phase:) Tj
+T*
+(- `generation = self._generator.generate\(question=question, retrieved=retrieved\)`) Tj
+T*
+(Source: `src/ask_my_docs/pipeline.py:64-67`) Tj
+T*
+() Tj
+T*
+(6. Cost and citation extraction:) Tj
+T*
+(- tokens = `prompt_tokens + completion_tokens`) Tj
+T*
+(- `estimated_cost = cost_calculator.estimate\(...\)`) Tj
+T*
+(- citations from `_extract_citations\(...\)` using regex:) Tj
+T*
+(  - `\\[\(?:doc_id\\s*[:=]\\s*\)?\([A-Za-z0-9_.:-]+\)]`) Tj
+T*
+(Source: `src/ask_my_docs/pipeline.py:69-77`, `20`) Tj
+T*
+() Tj
+T*
+(7. Question persistence:) Tj
+T*
+(- If `store_raw_questions=False`, stored question is) Tj
+T*
+(`<redacted:sha256:{digest}:len={len\(question\)}>`) Tj
+T*
+(Source: `src/ask_my_docs/pipeline.py:150-154`) Tj
+T*
+() Tj
+T*
+(8. Metrics row is persisted as `RequestMetricRecord\(...\)`.) Tj
+T*
+(Source: `src/ask_my_docs/pipeline.py:113-132`) Tj
+T*
+ET
+endstream
+endobj
+17 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 18 0 R /Resources << /Font << /F1 31 0 R >> >> >>
+endobj
+18 0 obj
+<< /Length 2679 >>
+stream
+BT
+/F1 9 Tf
+40 744 Td
+11 TL
+() Tj
+T*
+(9. CLI prints summary and optionally writes full payload JSON via `write_json`.) Tj
+T*
+(Source: `src/ask_my_docs/cli.py:131-145`, `src/ask_my_docs/utils.py:34-38`) Tj
+T*
+() Tj
+T*
+(#### Retrieval scoring logic details) Tj
+T*
+() Tj
+T*
+(Inside `HybridRetriever.search`:) Tj
+T*
+(- `k = top_k or config.top_k`, bounded to chunk count.) Tj
+T*
+(  Source: `src/ask_my_docs/retrieval/hybrid.py:335-338`) Tj
+T*
+(- Lexical scores: `self._bm25.get_scores\(tokenize\(query\)\)`.) Tj
+T*
+(  Source: `src/ask_my_docs/retrieval/hybrid.py:340`) Tj
+T*
+(- Semantic search over FAISS with `search_k = min\(len\(chunks\), max\(k*4, k\)\)`.) Tj
+T*
+(  Source: `src/ask_my_docs/retrieval/hybrid.py:344-346`) Tj
+T*
+(- Min-max normalization via `_normalize`.) Tj
+T*
+(  Source: `src/ask_my_docs/retrieval/hybrid.py:114-121,350-351`) Tj
+T*
+(- Combined score: weighted lexical + semantic.) Tj
+T*
+(  Source: `src/ask_my_docs/retrieval/hybrid.py:352-353`) Tj
+T*
+(- Top candidates via `np.argpartition` then deterministic sorted tie-break by combined, lexical,) Tj
+T*
+(semantic.) Tj
+T*
+(  Source: `src/ask_my_docs/retrieval/hybrid.py:360-369`) Tj
+T*
+() Tj
+T*
+(#### Real output payload structure \(actual keys\)) Tj
+T*
+() Tj
+T*
+(`sample_answer.json` keys:) Tj
+T*
+(- `answer`) Tj
+T*
+(- `citations`) Tj
+T*
+(- `completion_tokens`) Tj
+T*
+(- `estimated_cost_usd`) Tj
+T*
+(- `generation_latency_ms`) Tj
+T*
+(- `latency_ms`) Tj
+T*
+(- `model_name`) Tj
+T*
+(- `prompt_tokens`) Tj
+T*
+(- `question`) Tj
+T*
+(- `request_id`) Tj
+T*
+(- `retrieval_latency_ms`) Tj
+T*
+(- `retrieval_recall_at_k`) Tj
+T*
+(- `retrieved_doc_ids`) Tj
+T*
+(- `timestamp_utc`) Tj
+T*
+(- `total_tokens`) Tj
+T*
+(- `trace_id`) Tj
+T*
+(Source: `artifacts/notebook_tutorial/sample_answer.json:2-24`) Tj
+T*
+() Tj
+T*
+(Real values example:) Tj
+T*
+(- `model_name = "gemma4:12b"`) Tj
+T*
+(- `estimated_cost_usd = 0.0002682`) Tj
+T*
+(- `latency_ms = 29088.981`) Tj
+T*
+(- `retrieval_latency_ms = 0.436`) Tj
+T*
+(- `retrieval_recall_at_k = null` \(for direct ask without expected docs\)) Tj
+T*
+(Source: `artifacts/notebook_tutorial/sample_answer.json:7-15`) Tj
+T*
+() Tj
+T*
+(### 3.3 Flow C: `eval` + regression gate) Tj
+T*
+() Tj
+T*
+(#### Step-by-step execution) Tj
+T*
+() Tj
+T*
+(1. CLI `eval\(...\)` loads dataset path and builds pipeline.) Tj
+T*
+(Source: `src/ask_my_docs/cli.py:188-222`) Tj
+T*
+() Tj
+T*
+(2. Examples are loaded from JSONL into `EvalExample\(question, reference_answer,) Tj
+T*
+(expected_doc_ids\)`.) Tj
+T*
+(Source: `src/ask_my_docs/evaluation/runner.py:16-21,50-67`) Tj
+T*
+() Tj
+T*
+(3. For each example:) Tj
+T*
+(- call `pipeline.answer\(... expected_doc_ids=...\)`) Tj
+T*
+(- compute `answer_f1` and `exact_match`) Tj
+T*
+ET
+endstream
+endobj
+19 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 20 0 R /Resources << /Font << /F1 31 0 R >> >> >>
+endobj
+20 0 obj
+<< /Length 2378 >>
+stream
+BT
+/F1 9 Tf
+40 744 Td
+11 TL
+(- backfill DB row via `pipeline.update_quality_metrics\(...\)`) Tj
+T*
+(Source: `src/ask_my_docs/evaluation/runner.py:74-86`, `src/ask_my_docs/pipeline.py:135-141`) Tj
+T*
+() Tj
+T*
+(4. Aggregate metrics computed with Polars:) Tj
+T*
+(- `answer_f1_mean`) Tj
+T*
+(- `exact_match_mean`) Tj
+T*
+(- `retrieval_recall_at_k_mean`) Tj
+T*
+(- `latency_p50_ms`) Tj
+T*
+(- `latency_p95_ms`) Tj
+T*
+(- `avg_cost_usd`) Tj
+T*
+(- `avg_tokens`) Tj
+T*
+(Source: `src/ask_my_docs/evaluation/runner.py:108-123`) Tj
+T*
+() Tj
+T*
+(5. Report saved as JSON \(`aggregate` + `per_example`\).) Tj
+T*
+(Source: `src/ask_my_docs/evaluation/runner.py:25-37,128-137`) Tj
+T*
+() Tj
+T*
+(6. Optional baseline update:) Tj
+T*
+(- copy output to baseline path.) Tj
+T*
+(Source: `src/ask_my_docs/cli.py:238-242`) Tj
+T*
+() Tj
+T*
+(7. Optional gate:) Tj
+T*
+(- YAML loaded by `load_gate_config`) Tj
+T*
+(- baseline aggregate parsed if available) Tj
+T*
+(- `evaluate_gate` returns `GateResult\(passed, failures\)`) Tj
+T*
+(Source: `src/ask_my_docs/cli.py:244-267`, `src/ask_my_docs/evaluation/gating.py:45-124`) Tj
+T*
+() Tj
+T*
+(#### Real eval input schema) Tj
+T*
+() Tj
+T*
+(Each `data/eval/eval_set.jsonl` row uses:) Tj
+T*
+(- `question: str`) Tj
+T*
+(- `reference_answer: str`) Tj
+T*
+(- `expected_doc_ids: list[str]`) Tj
+T*
+(Source: `data/eval/eval_set.jsonl:1-5`) Tj
+T*
+() Tj
+T*
+(#### Real eval output schema) Tj
+T*
+() Tj
+T*
+(Report top-level keys:) Tj
+T*
+(- `aggregate`) Tj
+T*
+(- `per_example`) Tj
+T*
+(Source: `artifacts/baseline_metrics.json:2,12`) Tj
+T*
+() Tj
+T*
+(Aggregate keys include:) Tj
+T*
+(- `answer_f1_mean`) Tj
+T*
+(- `avg_cost_usd`) Tj
+T*
+(- `latency_p50_ms`) Tj
+T*
+(- `latency_p95_ms`) Tj
+T*
+(- `retrieval_recall_at_k_mean`) Tj
+T*
+(Source: `artifacts/baseline_metrics.json:3-10`) Tj
+T*
+() Tj
+T*
+(Per-example fields include:) Tj
+T*
+(- `predicted_answer`) Tj
+T*
+(- `retrieved_doc_ids`) Tj
+T*
+(- `total_tokens`) Tj
+T*
+(Source: `artifacts/baseline_metrics.json:23,28,34` \(and repeated blocks\)) Tj
+T*
+() Tj
+T*
+(### 3.4 Flow D: `metrics-summary` \(DuckDB aggregate observability\)) Tj
+T*
+() Tj
+T*
+(1. CLI invokes `metrics_store.summarize\(limit=...\)`.) Tj
+T*
+(Source: `src/ask_my_docs/cli.py:157-176`) Tj
+T*
+() Tj
+T*
+(2. SQL computes:) Tj
+T*
+(- `COUNT\(*\)`) Tj
+T*
+(- `quantile_cont\(latency_ms, 0.50\)` as `latency_p50_ms`) Tj
+T*
+(- `quantile_cont\(latency_ms, 0.95\)` as `latency_p95_ms`) Tj
+T*
+ET
+endstream
+endobj
+21 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 22 0 R /Resources << /Font << /F1 31 0 R >> >> >>
+endobj
+22 0 obj
+<< /Length 2840 >>
+stream
+BT
+/F1 9 Tf
+40 744 Td
+11 TL
+(- averages for cost/recall/F1/EM) Tj
+T*
+(Source: `src/ask_my_docs/observability/metrics_store.py:279-285`) Tj
+T*
+() Tj
+T*
+(3. Summaries return default zeros if table empty/none.) Tj
+T*
+(Source: `src/ask_my_docs/observability/metrics_store.py:290-307`) Tj
+T*
+() Tj
+T*
+(4. CLI prints formatted key=value lines.) Tj
+T*
+(Source: `src/ask_my_docs/cli.py:163-177`) Tj
+T*
+() Tj
+T*
+(Test-verified behaviors:) Tj
+T*
+(- `metrics-summary` works even when retrieval index is missing.) Tj
+T*
+(  Source: `tests/test_cli.py:27-32`) Tj
+T*
+(- non-positive limit is rejected.) Tj
+T*
+(  Source: `tests/test_metrics_store.py:43`, `tests/test_cli.py:36`) Tj
+T*
+() Tj
+T*
+(### 3.5 Trace and metrics data structures \(actual\)) Tj
+T*
+() Tj
+T*
+(`traces.jsonl` row keys:) Tj
+T*
+(- `name`, `trace_id`, `span_id`, `parent_span_id`) Tj
+T*
+(- `start_time_unix_ns`, `end_time_unix_ns`, `duration_ms`) Tj
+T*
+(- `status`, `attributes`) Tj
+T*
+(Source: `src/ask_my_docs/observability/tracing.py:32-44`) Tj
+T*
+() Tj
+T*
+(Observed span names and attributes in artifact:) Tj
+T*
+(- `rag.retrieve`, `rag.generate`, `rag.request`) Tj
+T*
+(- request attributes include `rag.request_id`, `rag.top_k`, `rag.model_name`, `rag.latency_ms`,) Tj
+T*
+(`rag.estimated_cost_usd`, `rag.retrieved_doc_count`) Tj
+T*
+(Source: `artifacts/notebook_tutorial/observability/traces.jsonl:1-3`) Tj
+T*
+() Tj
+T*
+(DuckDB metrics table columns:) Tj
+T*
+(- `request_id`, `trace_id`, `model_name`, `question`) Tj
+T*
+(- `latency_ms`, `retrieval_latency_ms`, `generation_latency_ms`) Tj
+T*
+(- `prompt_tokens`, `completion_tokens`, `total_tokens`) Tj
+T*
+(- `estimated_cost_usd`, `retrieval_recall_at_k`, `answer_f1`, `exact_match`, `timestamp_utc`) Tj
+T*
+(Source: `src/ask_my_docs/observability/metrics_store.py:69-85`) Tj
+T*
+() Tj
+T*
+(---) Tj
+T*
+() Tj
+T*
+(## ?? Module 4: Step-by-Step Setup & Development Guide) Tj
+T*
+() Tj
+T*
+(This module explains exactly how to bring up this repository on a clean machine and how boot) Tj
+T*
+(actually happens internally.) Tj
+T*
+() Tj
+T*
+(### 4.1 Environment prerequisites \(exact\)) Tj
+T*
+() Tj
+T*
+(1. OS: Linux/macOS.) Tj
+T*
+(   Source: `README.md:61`) Tj
+T*
+(2. Python: `>=3.11` \(README recommends `3.12.10`\).) Tj
+T*
+(   Source: `pyproject.toml:6`, `README.md:62`) Tj
+T*
+(3. Package/env manager: `uv`.) Tj
+T*
+(   Source: `README.md:63`) Tj
+T*
+(4. Ollama installed and running locally with at least one local model.) Tj
+T*
+(   Source: `README.md:64-66`) Tj
+T*
+() Tj
+T*
+(### 4.2 Installation path \(documented project path\)) Tj
+T*
+() Tj
+T*
+(Documented setup sequence:) Tj
+T*
+(1. Clone repo and enter directory.) Tj
+T*
+(2. Create venv with `uv venv --python 3.12.10`.) Tj
+T*
+(3. Activate env.) Tj
+T*
+(4. Install dependencies via `uv sync --all-extras`.) Tj
+T*
+(Source: `README.md:69-77`) Tj
+T*
+() Tj
+T*
+(Tooling config that backs this:) Tj
+T*
+ET
+endstream
+endobj
+23 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 24 0 R /Resources << /Font << /F1 31 0 R >> >> >>
+endobj
+24 0 obj
+<< /Length 3192 >>
+stream
+BT
+/F1 9 Tf
+40 744 Td
+11 TL
+(- script entrypoint `ask-my-docs = "ask_my_docs.cli:app"`.) Tj
+T*
+(  Source: `pyproject.toml:32-33`) Tj
+T*
+(- pytest source root and test paths.) Tj
+T*
+(  Source: `pyproject.toml:42-44`) Tj
+T*
+(- ruff + mypy strict configuration.) Tj
+T*
+(  Source: `pyproject.toml:46-55`) Tj
+T*
+() Tj
+T*
+(### 4.3 `.env` / environment variable contract \(exact names + defaults\)) Tj
+T*
+() Tj
+T*
+(All settings use prefix `ASK_MY_DOCS_`.) Tj
+T*
+(Source: `src/ask_my_docs/settings.py:35`, `README.md:81`) Tj
+T*
+() Tj
+T*
+(| Variable | Default in code | Purpose |) Tj
+T*
+(|---|---|---|) Tj
+T*
+(| `ASK_MY_DOCS_OLLAMA_BASE_URL` | `http://127.0.0.1:11434` | Ollama API base URL |) Tj
+T*
+(| `ASK_MY_DOCS_OLLAMA_MODEL` | `None` | Optional pinned model |) Tj
+T*
+(| `ASK_MY_DOCS_OLLAMA_TIMEOUT_SECONDS` | `120.0` | Generate timeout |) Tj
+T*
+(| `ASK_MY_DOCS_OLLAMA_LIST_TIMEOUT_SECONDS` | `10.0` | `ollama list` timeout |) Tj
+T*
+(| `ASK_MY_DOCS_DOCS_DIR` | `data/docs` | Source corpus directory |) Tj
+T*
+(| `ASK_MY_DOCS_EVAL_PATH` | `data/eval/eval_set.jsonl` | Eval dataset |) Tj
+T*
+(| `ASK_MY_DOCS_ARTIFACTS_DIR` | `artifacts` | Top-level artifacts path |) Tj
+T*
+(| `ASK_MY_DOCS_INDEX_DIR` | `artifacts/index` | Retriever artifacts |) Tj
+T*
+(| `ASK_MY_DOCS_TRACES_PATH` | `artifacts/observability/traces.jsonl` | Trace log output |) Tj
+T*
+(| `ASK_MY_DOCS_METRICS_DB_PATH` | `artifacts/observability/metrics.duckdb` | Observability DB |) Tj
+T*
+(| `ASK_MY_DOCS_THRESHOLDS_PATH` | `configs/regression_thresholds.yaml` | Gate policy config |) Tj
+T*
+(| `ASK_MY_DOCS_OBSERVABILITY_STORE_RAW_QUESTIONS` | `False` | Privacy toggle |) Tj
+T*
+() Tj
+T*
+(Defaults source: `src/ask_my_docs/settings.py:43-55` and README table `README.md:87-97`.) Tj
+T*
+() Tj
+T*
+(### 4.4 Conceptual boot sequence \(what happens when you run each command\)) Tj
+T*
+() Tj
+T*
+(#### `ask-my-docs ingest`) Tj
+T*
+(1. Read docs.) Tj
+T*
+(2. Build retriever.) Tj
+T*
+(3. Persist index artifacts for later querying.) Tj
+T*
+(Source: `src/ask_my_docs/cli.py:93-114`) Tj
+T*
+() Tj
+T*
+(#### `ask-my-docs ask "..." --top-k N`) Tj
+T*
+(1. Build runtime pipeline components.) Tj
+T*
+(2. Load retriever from index artifacts.) Tj
+T*
+(3. Retrieve top-k chunks.) Tj
+T*
+(4. Build grounded prompt and call Ollama.) Tj
+T*
+(5. Compute cost/latency/citations.) Tj
+T*
+(6. Persist request metrics row and traces.) Tj
+T*
+(7. Print summary and optional JSON output.) Tj
+T*
+(Source: `src/ask_my_docs/cli.py:56-90,118-154`, `src/ask_my_docs/pipeline.py:42-133`) Tj
+T*
+() Tj
+T*
+(#### `ask-my-docs eval ... [--gate] [--set-baseline]`) Tj
+T*
+(1. Load eval JSONL.) Tj
+T*
+(2. Run full ask flow per example.) Tj
+T*
+(3. Score quality metrics.) Tj
+T*
+(4. Compute aggregate report.) Tj
+T*
+(5. Optionally set baseline.) Tj
+T*
+(6. Optionally enforce gate and fail command on violations.) Tj
+T*
+(Source: `src/ask_my_docs/cli.py:188-273`, `src/ask_my_docs/evaluation/runner.py:69-137`,) Tj
+T*
+(`src/ask_my_docs/evaluation/gating.py:52-124`) Tj
+T*
+() Tj
+T*
+(### 4.5 Development/CI lifecycle) Tj
+T*
+() Tj
+T*
+(CI job `quality-and-regression-gate` runs:) Tj
+T*
+(1. `uv sync --all-extras`) Tj
+T*
+(2. `ruff check src tests`) Tj
+T*
+(3. `mypy src`) Tj
+T*
+(4. `pytest -q`) Tj
+T*
+ET
+endstream
+endobj
+25 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 26 0 R /Resources << /Font << /F1 31 0 R >> >> >>
+endobj
+26 0 obj
+<< /Length 3407 >>
+stream
+BT
+/F1 9 Tf
+40 744 Td
+11 TL
+(5. `ask-my-docs ingest`) Tj
+T*
+(6. `ask-my-docs eval` for candidate metrics) Tj
+T*
+(7. `ask-my-docs eval --gate` with baseline + thresholds) Tj
+T*
+(Source: `.github/workflows/ci.yml:9-49`) Tj
+T*
+() Tj
+T*
+(### 4.6 Notebook learning path already included in repo) Tj
+T*
+() Tj
+T*
+(Notebook `tutorial_observability_ollama.ipynb` is a real staged walkthrough:) Tj
+T*
+(1. Configure isolated tutorial artifacts.) Tj
+T*
+(2. Discover local Ollama models.) Tj
+T*
+(3. Build index.) Tj
+T*
+(4. Build pipeline.) Tj
+T*
+(5. Ask one question.) Tj
+T*
+(6. Evaluate.) Tj
+T*
+(7. Apply gate.) Tj
+T*
+(8. Inspect DuckDB summary.) Tj
+T*
+(9. Inspect trace samples.) Tj
+T*
+(10. Next improvements.) Tj
+T*
+(Source: `notebooks/tutorial_observability_ollama.ipynb:14,85,140,204,263,340,395,450,515,559`) Tj
+T*
+() Tj
+T*
+(---) Tj
+T*
+() Tj
+T*
+(## ? Module 5: Tech Interview & Hiring Preparation) Tj
+T*
+() Tj
+T*
+(### 5.1 Five core technical interview questions) Tj
+T*
+() Tj
+T*
+(1. **Why did this repo choose deterministic hash embeddings instead of model embeddings, and what) Tj
+T*
+(tradeoff does that create in retrieval quality vs reproducibility?**) Tj
+T*
+(2. **Walk through exactly how `RAGPipeline.answer` enforces observability and privacy in one) Tj
+T*
+(request lifecycle.**) Tj
+T*
+(3. **How does `HybridRetriever.search` combine BM25 and FAISS scores, and where can ranking) Tj
+T*
+(instability happen?**) Tj
+T*
+(4. **How does the regression gate prevent silent quality/cost/latency drift in CI, and what) Tj
+T*
+(assumptions does it make about baseline validity?**) Tj
+T*
+(5. **What failure modes can break index compatibility between ingest and query, and how does the) Tj
+T*
+(code guard against them?**) Tj
+T*
+() Tj
+T*
+(### 5.2 Three hard engineering scenarios) Tj
+T*
+() Tj
+T*
+(1. **Database latency triples:** `metrics-summary` and request writes become slow. How would you) Tj
+T*
+(optimize `MetricsStore` while preserving current schema behavior and upsert semantics?) Tj
+T*
+(2. **Model fleet changes:** `ollama list` now returns mostly cloud rows \(`size "-"`\) and) Tj
+T*
+(intermittent timeout spikes. How should model-selection robustness evolve while keeping the) Tj
+T*
+(current fallback intent?) Tj
+T*
+(3. **Domain growth:** docs expand from 5 to 50k documents. What specific code points must change) Tj
+T*
+(to keep retrieval and evaluation practical?) Tj
+T*
+() Tj
+T*
+(### 5.3 Detailed model answers) Tj
+T*
+() Tj
+T*
+(#### Q1 Answer) Tj
+T*
+(The deterministic embedder is explicitly implemented as a local hashing projection) Tj
+T*
+(\(`HashingEmbedder.embed`\) with no external embedding model dependency. This makes indexing) Tj
+T*
+(reproducible and offline-friendly \(same tokens -> same vectors\), which aligns with) Tj
+T*
+(local/Ollama-first architecture.) Tj
+T*
+(Tradeoff: semantic quality ceiling is lower than modern learned embedding models, and README) Tj
+T*
+(explicitly acknowledges this limitation.) Tj
+T*
+(Evidence: `src/ask_my_docs/retrieval/hybrid.py:67-87`, `README.md:275`.) Tj
+T*
+() Tj
+T*
+(#### Q2 Answer) Tj
+T*
+(`RAGPipeline.answer` creates request-scoped telemetry and IDs:) Tj
+T*
+(- `request_id = str\(uuid4\(\)\)`) Tj
+T*
+(- spans for `rag.request`, `rag.retrieve`, `rag.generate`) Tj
+T*
+(- attributes for top-k, model, latency, estimated cost, retrieved count) Tj
+T*
+(Then it computes tokens/cost/citations and persists one `RequestMetricRecord`. Privacy is enforced) Tj
+T*
+ET
+endstream
+endobj
+27 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 28 0 R /Resources << /Font << /F1 31 0 R >> >> >>
+endobj
+28 0 obj
+<< /Length 3734 >>
+stream
+BT
+/F1 9 Tf
+40 744 Td
+11 TL
+(by `_question_for_storage`: raw question is redacted hash unless `store_raw_questions` is enabled.) Tj
+T*
+(Evidence: `src/ask_my_docs/pipeline.py:50-55,58-67,88-93,113-132,150-154`; tests) Tj
+T*
+(`tests/test_pipeline.py:55,68,82`.) Tj
+T*
+() Tj
+T*
+(#### Q3 Answer) Tj
+T*
+(Search path:) Tj
+T*
+(1. BM25 lexical scores.) Tj
+T*
+(2. FAISS semantic scores for top `search_k`.) Tj
+T*
+(3. Min-max normalize each score vector.) Tj
+T*
+(4. Weighted sum with configured lexical/semantic weights.) Tj
+T*
+(5. Candidate selection via `argpartition`, then sorted tie-break using combined -> lexical ->) Tj
+T*
+(semantic.) Tj
+T*
+(Instability can happen when many normalized scores collapse to near-equal values \(especially with) Tj
+T*
+(sparse token overlap or low-variance vectors\), causing tie-heavy ranking dependence on secondary) Tj
+T*
+(sort fields.) Tj
+T*
+(Evidence: `src/ask_my_docs/retrieval/hybrid.py:340-369`, config) Tj
+T*
+(`src/ask_my_docs/settings.py:26-27`.) Tj
+T*
+() Tj
+T*
+(#### Q4 Answer) Tj
+T*
+(Gate design enforces two layers:) Tj
+T*
+(- Absolute minima/maxima \(`min_answer_f1`, `max_latency_p95_ms`, etc.\).) Tj
+T*
+(- Relative baseline drift caps \(`max_answer_f1_drop`, etc.\) when baseline exists.) Tj
+T*
+(In CI, this blocks regressions after candidate metrics are computed. Baseline validity assumption) Tj
+T*
+(is crucial: stale or poor baseline weakens governance. The CLI also validates baseline payload has) Tj
+T*
+(`aggregate`.) Tj
+T*
+(Evidence: `configs/regression_thresholds.yaml:1-11`,) Tj
+T*
+(`src/ask_my_docs/evaluation/gating.py:52-124`, `src/ask_my_docs/cli.py:244-257`,) Tj
+T*
+(`.github/workflows/ci.yml:38-49`.) Tj
+T*
+() Tj
+T*
+(#### Q5 Answer) Tj
+T*
+(Compatibility guards include:) Tj
+T*
+(- chunk/embedding row count alignment.) Tj
+T*
+(- embedding dimensional consistency across config, embeddings, and FAISS index.) Tj
+T*
+(- optional manifest consistency checks \(`chunk_count`, `embedding_dim`\).) Tj
+T*
+(These checks fail early with explicit `ValueError` messages, and tests verify mismatch handling.) Tj
+T*
+(Evidence: `src/ask_my_docs/retrieval/hybrid.py:130-172,238-307`, `tests/test_retrieval.py:38`.) Tj
+T*
+() Tj
+T*
+(#### Scenario 1 Answer \(DB latency triples\)) Tj
+T*
+(Keep architecture, optimize internals:) Tj
+T*
+(1. Confirm bottleneck split between write path \(`record`\) and read path \(`summarize`\) using) Tj
+T*
+(span-level and DB-level timings.) Tj
+T*
+(2. Preserve current upsert semantics \(`ON CONFLICT\(request_id\)`\) to maintain idempotent request) Tj
+T*
+(row behavior.) Tj
+T*
+(3. Add DB maintenance and possibly partitioning/rollup strategy while keeping) Tj
+T*
+(`rag_request_metrics` contract stable.) Tj
+T*
+(4. For summary-heavy workloads, materialize rolling aggregates and keep existing `summarize` API) Tj
+T*
+(unchanged.) Tj
+T*
+(5. Avoid schema-breaking changes because tests and CLI formatting depend on specific keys) Tj
+T*
+(\(`latency_p50_ms`, etc.\).) Tj
+T*
+(Evidence anchor: `src/ask_my_docs/observability/metrics_store.py:218-251,266-313`, tests) Tj
+T*
+(`tests/test_metrics_store.py:36-38,88-89`.) Tj
+T*
+() Tj
+T*
+(#### Scenario 2 Answer \(model discovery instability\)) Tj
+T*
+(Current behavior:) Tj
+T*
+(- parse rows from `ollama list`.) Tj
+T*
+(- prefer configured model if present.) Tj
+T*
+(- else prefer first local model \(`size != "-"`\).) Tj
+T*
+(- timeout raises runtime error.) Tj
+T*
+(Enhancements:) Tj
+T*
+(1. Cache successful model name with TTL and fallback to cached local model when `ollama list`) Tj
+T*
+(intermittently times out.) Tj
+T*
+(2. Add retry with backoff for `_list_models`.) Tj
+T*
+(3. Keep explicit error if configured model is missing, but include candidate hinting.) Tj
+T*
+(4. Preserve current local-first selection intent.) Tj
+T*
+ET
+endstream
+endobj
+29 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 30 0 R /Resources << /Font << /F1 31 0 R >> >> >>
+endobj
+30 0 obj
+<< /Length 3198 >>
+stream
+BT
+/F1 9 Tf
+40 744 Td
+11 TL
+(Evidence anchor: `src/ask_my_docs/llm/ollama.py:63-96,125-148`; test timeout behavior) Tj
+T*
+(`tests/test_ollama.py:43,53`.) Tj
+T*
+() Tj
+T*
+(#### Scenario 3 Answer \(50k docs\)) Tj
+T*
+(Specific pressure points and likely changes:) Tj
+T*
+(1. `load_documents` and in-memory chunk list scale limits; move toward streaming ingestion/chunk) Tj
+T*
+(persistence.) Tj
+T*
+(2. FAISS index type: `IndexFlatIP` is brute-force; switch to approximate indexes for high scale.) Tj
+T*
+(3. Hash embeddings quality and collision risks grow with corpus size; replace with stronger) Tj
+T*
+(embedding model pipeline while retaining manifest compatibility checks.) Tj
+T*
+(4. Evaluation runner currently loops synchronously over examples; introduce batching/parallelism) Tj
+T*
+(and richer dataset stratification.) Tj
+T*
+(5. Metrics DB summarization still works, but retention/archival strategy becomes mandatory.) Tj
+T*
+(Evidence anchor: `src/ask_my_docs/retrieval/hybrid.py:175-202`,) Tj
+T*
+(`src/ask_my_docs/evaluation/runner.py:69-106`,) Tj
+T*
+(`src/ask_my_docs/observability/metrics_store.py:266-313`.) Tj
+T*
+() Tj
+T*
+(---) Tj
+T*
+() Tj
+T*
+(## Appendix A: Real Constants and Contracts You Must Memorize) Tj
+T*
+() Tj
+T*
+(1. Env prefix: `ASK_MY_DOCS_` \(`settings.py:35`\).) Tj
+T*
+(2. Retrieval defaults: `120/20`, `top_k=4`, `0.45/0.55`, `dim=256` \(`settings.py:23-28`\).) Tj
+T*
+(3. Ollama generation temp: `0.1` \(`ollama.py:177`\).) Tj
+T*
+(4. Citation regex accepts both `[doc_id: X]` and `[doc_id=X]` \(`pipeline.py:20`; tested in) Tj
+T*
+(`tests/test_pipeline.py:97-101`\).) Tj
+T*
+(5. Metrics table name: `rag_request_metrics` \(`metrics_store.py:69`\).) Tj
+T*
+(6. Quantile metrics computed directly in DuckDB \(`metrics_store.py:279-280`\).) Tj
+T*
+(7. Gate thresholds from YAML:) Tj
+T*
+(- absolute min F1 `0.60`) Tj
+T*
+(- absolute min recall@k `0.95`) Tj
+T*
+(- absolute max p95 latency `70000.0`) Tj
+T*
+(- absolute max avg cost `0.0004`) Tj
+T*
+(- max F1 drop `0.05`) Tj
+T*
+(- max recall drop `0.02`) Tj
+T*
+(- max p95 increase `15000.0`) Tj
+T*
+(- max avg cost increase `0.00008`) Tj
+T*
+(Source: `configs/regression_thresholds.yaml:1-11`) Tj
+T*
+() Tj
+T*
+(## Appendix B: Static-Learning Exercises \(Zero -> Hero progression\)) Tj
+T*
+() Tj
+T*
+(1. Trace one command end-to-end \(`ask`\) by opening only `cli.py`, `pipeline.py`, `llm/ollama.py`,) Tj
+T*
+(`retrieval/hybrid.py`, `metrics_store.py` and writing the call chain yourself.) Tj
+T*
+(2. Recompute one sample cost manually from `prompt_tokens` and `completion_tokens` in) Tj
+T*
+(`sample_answer.json` using pricing defaults in `settings.py`.) Tj
+T*
+(3. Manually verify whether one baseline per-example answer has citation list consistent with) Tj
+T*
+(`retrieved_doc_ids`.) Tj
+T*
+(4. Inspect how many failure strings gate can emit and map each to one specific threshold field.) Tj
+T*
+(5. Compare README claimed architecture to actual code paths and note any drift.) Tj
+T*
+() Tj
+T*
+(## Appendix C: PDF Handbook Status) Tj
+T*
+() Tj
+T*
+(A companion file `ZERO_TO_HERO_PDF_EXPORT.md` is included with deterministic export instructions) Tj
+T*
+(so you can generate a print-ready PDF locally without changing repository code.) Tj
+T*
+() Tj
+T*
+ET
+endstream
+endobj
+31 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Courier >>
+endobj
+xref
+0 32
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000204 00000 n 
+0000000331 00000 n 
+0000003873 00000 n 
+0000004000 00000 n 
+0000007467 00000 n 
+0000007594 00000 n 
+0000011915 00000 n 
+0000012043 00000 n 
+0000016566 00000 n 
+0000016695 00000 n 
+0000021981 00000 n 
+0000022110 00000 n 
+0000025490 00000 n 
+0000025619 00000 n 
+0000028477 00000 n 
+0000028606 00000 n 
+0000031337 00000 n 
+0000031466 00000 n 
+0000033896 00000 n 
+0000034025 00000 n 
+0000036917 00000 n 
+0000037046 00000 n 
+0000040290 00000 n 
+0000040419 00000 n 
+0000043878 00000 n 
+0000044007 00000 n 
+0000047793 00000 n 
+0000047922 00000 n 
+0000051172 00000 n 
+trailer
+<< /Size 32 /Root 1 0 R >>
+startxref
+51241
+%%EOF
